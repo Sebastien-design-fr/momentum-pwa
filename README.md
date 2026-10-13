@@ -1,19 +1,10 @@
-# Momentum AI — V0.6
+# MOMENTUM v0.7 — Apple Bridge (prototype)
 
-PWA gratuite pour iPhone ; aucun service IA ou notification payante. Mise à jour depuis V0.5 conservant `localStorage` (`momentum.v1`).
+Gratuit, sans API ni serveur payant. Publication : remplacer les fichiers du dépôt GitHub Pages, en conservant la structure à la racine. Sauvegarder les données avant toute mise à jour.
 
-## Nouveautés
-- Export groupé des tâches datées non terminées dans `momentum-planning.ics` ; téléchargement dans Fichiers, import et validation Apple nécessaires.
-- Mention locale « fichier calendrier généré » (ne signifie **pas** ajouté au calendrier).
-- Durées et délais des alertes conservés dans les événements exportés.
-- Passerelle Raccourcis conservée ; elle ne transmet actuellement **que le titre** et demande un raccourci configuré sur l'iPhone.
+## Important
+Le bouton **Valider et programmer dans Apple** sauvegarde la tâche localement, puis déclenche l’URL `shortcuts://run-shortcut` avec une entrée JSON (`title`, `start`, `end`, `alert`, `id`, `notes`). Il faut créer le raccourci **MOMENTUM Bridge** une fois dans Raccourcis sur l’iPhone (instructions détaillées dans Réglages). Le raccourci doit analyser le JSON et utiliser l’action Apple « Ajouter un nouvel événement » sans formulaire de confirmation. Les permissions système initiales restent obligatoires.
 
-## Limites importantes
-- Pas de lecture ni de modification d'événements Apple, ni de confirmation d'import possible depuis une PWA.
-- L'import `.ics` dépend de la version iOS et peut nécessiter d'ouvrir le fichier dans Fichiers ou de l'envoyer par mail. Un nouvel import peut créer des doublons.
-- Pas de notifications automatiques de la PWA lorsque fermée ; les alertes viennent d'Apple **après import**.
-- Aucun calendrier / raccourci n'est créé automatiquement.
-- Météo gratuite Open-Meteo réservée à usage non commercial sous conditions. À remplacer avant toute commercialisation.
+Momentum ne peut **pas prouver** que le raccourci a bien créé l’événement : contrôler le calendrier sur l’iPhone. Les alertes paramétrables et la déduplication nécessitent une configuration dans Raccourcis et leur disponibilité dépend des actions iOS. Le bouton de secours .ics reste disponible.
 
-## Publication
-Exporter une sauvegarde dans Réglages puis remplacer les fichiers à la racine de GitHub Pages. Ne pas envoyer de données privées sur un dépôt public.
+Aucune donnée privée ne doit être ajoutée au dépôt public. Open-Meteo gratuit non commercial sous conditions, à revoir avant distribution commerciale.
