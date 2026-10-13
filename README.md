@@ -1,19 +1,20 @@
-# MOMENTUM — PWA iPhone (prototype 0.1)
+# MOMENTUM AI — V0.3
 
-Prototype **sans API payante** : tâches, suggestions locales, suivi des candidatures et sauvegarde JSON. Fonctionne hors ligne après chargement. Les données sont stockées **sur l'appareil uniquement** (`localStorage`) : pas de synchronisation ni de compte, pas d'IA conversationnelle, de recherche d'emploi automatique ou de notifications push dans cette version.
+Application PWA personnelle gratuite pour iPhone. Déploiement : GitHub Pages, branche `main`, dossier racine.
 
-## Installation sur iPhone, gratuitement
+## Nouveautés
+- Saisie de tâches par dictée **native du clavier iPhone** ou texte libre. Aucun service vocal payant.
+- Reconnaissance simple des dates, jours de la semaine et heures (règles locales, pas une IA générative).
+- Suggestions météo Open-Meteo pour les tâches extérieures, sur demande et connexion Internet. Critères approximatifs, sans garantie sur les conditions réelles.
+- Validation manuelle avant enregistrement, puis export `.ics` par tâche datée avec alerte 30 min avant. **L'utilisateur doit ajouter le fichier au calendrier.**
+- Liste des tâches planifiées sur l'accueil.
 
-1. Créer un dépôt GitHub **public** nommé `momentum-pwa` (ne jamais y ajouter des données personnelles ou des clés API).
-2. Ajouter les fichiers de ce dossier **à la racine** du dépôt (`index.html`, `app.js`, `sw.js`, `manifest.webmanifest`, `icons/`).
-3. Dans **Settings → Pages**, sélectionner **Deploy from a branch**, `main` et `/ (root)`, puis enregistrer.
-4. Ouvrir l'URL GitHub Pages `https://VOTRE-PSEUDO.github.io/momentum-pwa/` dans **Safari sur iPhone**.
-5. Toucher **Partager → Sur l'écran d'accueil → Ajouter**.
+## Limitations importantes
+- Pas de notifications push autonomes ni de surveillance météo lorsque l'application est fermée.
+- Le calendrier iOS peut ne pas ouvrir directement un fichier .ics téléchargé ; passer par Fichiers ou l'import calendrier si nécessaire.
+- Données locales uniquement dans le navigateur ; exportez une sauvegarde avant de supprimer les données du site.
+- Open-Meteo : l'accès gratuit standard est réservé aux usages non commerciaux sous conditions ; avant toute commercialisation, obtenir une licence et revoir les mentions légales/conditions.
+- GitHub Pages ne doit pas servir de plateforme pour exploiter un SaaS commercial.
 
-Tester localement sur Mac : `python3 -m http.server 8000`, puis ouvrir `http://localhost:8000`.
-
-## Précautions
-
-- Les informations sont uniquement enregistrées dans le navigateur ou dans la PWA, et peuvent disparaître si ses données sont effacées. Le bouton **Exporter ma sauvegarde** permet de conserver un fichier JSON privé.
-- Ne pas mettre ton CV, ton historique personnel ou une clé API dans un dépôt public.
-- Les notifications iPhone, la synchronisation et les agents autonomes nécessiteront des composants supplémentaires et ne sont **pas** simulés ici.
+## Mise à jour
+Remplacer les fichiers à la racine de `momentum-pwa` par ceux de cette version. La sauvegarde et les tâches V0.2 sont conservées (clé `momentum.v1`, enrichie avec des dates facultatives).
