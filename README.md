@@ -1,20 +1,19 @@
-# MOMENTUM AI — V0.3
+# Momentum AI — V0.6
 
-Application PWA personnelle gratuite pour iPhone. Déploiement : GitHub Pages, branche `main`, dossier racine.
+PWA gratuite pour iPhone ; aucun service IA ou notification payante. Mise à jour depuis V0.5 conservant `localStorage` (`momentum.v1`).
 
 ## Nouveautés
-- Saisie de tâches par dictée **native du clavier iPhone** ou texte libre. Aucun service vocal payant.
-- Reconnaissance simple des dates, jours de la semaine et heures (règles locales, pas une IA générative).
-- Suggestions météo Open-Meteo pour les tâches extérieures, sur demande et connexion Internet. Critères approximatifs, sans garantie sur les conditions réelles.
-- Validation manuelle avant enregistrement, puis export `.ics` par tâche datée avec alerte 30 min avant. **L'utilisateur doit ajouter le fichier au calendrier.**
-- Liste des tâches planifiées sur l'accueil.
+- Export groupé des tâches datées non terminées dans `momentum-planning.ics` ; téléchargement dans Fichiers, import et validation Apple nécessaires.
+- Mention locale « fichier calendrier généré » (ne signifie **pas** ajouté au calendrier).
+- Durées et délais des alertes conservés dans les événements exportés.
+- Passerelle Raccourcis conservée ; elle ne transmet actuellement **que le titre** et demande un raccourci configuré sur l'iPhone.
 
-## Limitations importantes
-- Pas de notifications push autonomes ni de surveillance météo lorsque l'application est fermée.
-- Le calendrier iOS peut ne pas ouvrir directement un fichier .ics téléchargé ; passer par Fichiers ou l'import calendrier si nécessaire.
-- Données locales uniquement dans le navigateur ; exportez une sauvegarde avant de supprimer les données du site.
-- Open-Meteo : l'accès gratuit standard est réservé aux usages non commerciaux sous conditions ; avant toute commercialisation, obtenir une licence et revoir les mentions légales/conditions.
-- GitHub Pages ne doit pas servir de plateforme pour exploiter un SaaS commercial.
+## Limites importantes
+- Pas de lecture ni de modification d'événements Apple, ni de confirmation d'import possible depuis une PWA.
+- L'import `.ics` dépend de la version iOS et peut nécessiter d'ouvrir le fichier dans Fichiers ou de l'envoyer par mail. Un nouvel import peut créer des doublons.
+- Pas de notifications automatiques de la PWA lorsque fermée ; les alertes viennent d'Apple **après import**.
+- Aucun calendrier / raccourci n'est créé automatiquement.
+- Météo gratuite Open-Meteo réservée à usage non commercial sous conditions. À remplacer avant toute commercialisation.
 
-## Mise à jour
-Remplacer les fichiers à la racine de `momentum-pwa` par ceux de cette version. La sauvegarde et les tâches V0.2 sont conservées (clé `momentum.v1`, enrichie avec des dates facultatives).
+## Publication
+Exporter une sauvegarde dans Réglages puis remplacer les fichiers à la racine de GitHub Pages. Ne pas envoyer de données privées sur un dépôt public.
