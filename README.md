@@ -1,4 +1,4 @@
-# MOMENTUM v0.9 — PWA iPhone
+# MOMENTUM v0.10 — PWA iPhone
 
 Un accueil centré sur une prochaine étape, trois actions prioritaires, et un coach adapté aux tâches et candidatures existantes. Les cinq écrans, sauvegardes et la passerelle Calendrier restent disponibles. Les données conservent la clé `momentum.v1` et leurs identifiants.
 
@@ -41,3 +41,16 @@ python3 shortcuts/test_shortcut_structure.py
 Les tests couvrent conservation des données V0.8.1, dates/durées/alertes Bridge, priorités, contexte de conversation, conseils, streaming, interruption, absence de WebGPU, échec de chargement et protection des caches. La génération réelle est vérifiée séparément dans le navigateur : les doubles de test ne prouvent pas la compatibilité iOS.
 
 Vérifications manuelles réalisées : chargement et rechargement du modèle Qwen2.5-1.5B, génération réelle, interruption et retour aux conseils guidés dans le navigateur Chromium du Mac ; navigation et formulaires à 320 et 440 pixels de large ; action terminée retirée de l’accueil mais conservée dans Actions. Les 13 tests automatisés passent. Aucun de ces essais ne valide la mémoire ou le GPU de l’iPhone.
+
+
+## V0.10 : du coach au créneau
+
+Écris « Ajoute appeler le garage demain à 15 h, pendant 30 minutes, alerte 15 minutes avant ». Le coach affiche directement une fiche éditable avec titre, date, heure, durée et alerte. Tu peux compléter une demande incomplète par « demain à 15 h ». Le bouton Ajouter à Calendrier valide une seule fois et transmet au raccourci existant. La préparation des demandes explicites utilise un analyseur local déterministe ; elle ne nécessite pas de télécharger le modèle génératif. Le modèle reste utilisé pour les conversations libres et demeure expérimental.
+
+Le créneau est vérifié avant toute écriture et ouverture Apple : date/heure réellement existantes, créneau futur, valeurs acceptées par le raccourci, titre non vide. Les durées disponibles restent 30/60/90/120 minutes et les alertes 0/15/30/60/1440. Aucune valeur demandée hors contrat n’est arrondie silencieusement. Une tâche identique au même début est bloquée ; Actions permet de renvoyer la tâche existante, avec le même identifiant, si Raccourcis n’a pas pu être ouvert.
+
+Une fiche n’est pas une tâche enregistrée : Annuler ne crée rien. Les demandes complexes ou ambiguës doivent être corrigées dans la fiche. Pas d’accès direct à Calendrier, de détection générale des conflits avec les autres événements, ni d’exécution silencieuse en arrière-plan. Les autorisations Apple peuvent apparaître ; le résultat reste à vérifier dans Calendrier.
+
+Nouvelle palette claire gris bleuté / ardoise / bleu, fiche calendrier cuivre, progression verte. Les cinq écrans, données momentum.v1, identifiants et fichier signé Bridge sont conservés. DESIGN.md et UX-CONTRACT.md documentent les choix. Les formulaires, confirmations, erreurs et actions utilisent les primitives partagées ; les dates et listes gardent les contrôles natifs iPhone.
+
+Validation V0.10 : 25 tests Node, dont exécution du code complet avec interception de l’ouverture externe. Aucun de ces tests ne crée un événement Apple. Audit statique Premium strict et lint DESIGN.md exécutés séparément. Contrôle navigateur des clarifications, champs modifiables, annulation, clavier, confirmations et vues 320/440 px. Le raccourci demeure celui déjà testé et confirmé par l’utilisateur ; le nouveau parcours dans la PWA installée reste à essayer sur l’iPhone.
