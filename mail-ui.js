@@ -1,14 +1,14 @@
 (function(root){
  'use strict';
  function mount({$,action,feedback,fieldError,prepare,forget,navigate}){
-  const CONFIG='momentum.mail.config.v1';let api=null,connected=false,busy=false,bilan=null,accountName='',filter='open',selected='',generation=0,lastRefresh=0,lastSummary='',lastPreparedTitle='';
+  const CONFIG='momentum.mail.config.v1';let api=null,connected=false,needsLogin=false,busy=false,bilan=null,accountName='',filter='open',selected='',generation=0,lastRefresh=0,lastSummary='',lastPreparedTitle='';
   const statuses=new Map(),edits=new Map();
   const redirect=new URL('./mail-auth.html',location.href).href;
   $('mail-redirect').textContent=redirect;
   try{$('mail-client-id').value=localStorage.getItem(CONFIG)||'';}catch{}
   function text(node,tag,value,cls){const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;node.append(el);return el;}
   function status(t){return statuses.get(t.id)||t.status;}
-  function controls(){ $('mail-connect').disabled=busy||!api;$('mail-connect').hidden=connected||!api;$('mail-setup-open').hidden=!!api;$('mail-setup-open').disabled=busy;$('mail-disconnect').hidden=!connected;$('mail-disconnect').disabled=busy;$('mail-refresh').hidden=!connected;$('mail-refresh').disabled=busy||!connected;$('mail-save-config').disabled=busy||connected;$('mail-client-id').disabled=connected;$('mail-refresh').textContent=busy?'Chargement…':'Actualiser le bilan';$('mail-account').textContent=connected?'Connecté : '+accountName:'Outlook non connecté';$('mail-body').hidden=!connected||!bilan;$('mail-assist').hidden=!connected||!bilan;$('mail-assist').disabled=busy||!bilan||!connected;}
+  function controls(){ $('mail-connect').disabled=busy||!api;$('mail-connect').hidden=(connected&&!needsLogin)||!api;$('mail-connect').textContent=needsLogin?'Reconnecter Outlook':'Connecter Outlook';$('mail-setup-open').hidden=!!api;$('mail-setup-open').disabled=busy;$('mail-disconnect').hidden=!connected;$('mail-disconnect').disabled=busy;$('mail-refresh').hidden=!connected;$('mail-refresh').disabled=busy||!connected;$('mail-save-config').disabled=busy||connected;$('mail-client-id').disabled=connected;$('mail-refresh').textContent=busy?'Chargement…':'Actualiser le bilan';$('mail-account').textContent=connected?'Connecté : '+accountName:'Outlook non connecté';$('mail-body').hidden=!connected||!bilan;$('mail-assist').hidden=!connected||!bilan;$('mail-assist').disabled=busy||!bilan||!connected;}
   async function configure(){
    fieldError('mail-client-id','mail-config-error','');try{
     const id=$('mail-client-id').value.trim();const next=MomentumMail.client({msal:root.msal,clientId:id,redirectUri:redirect});await next.ready;
@@ -20,17 +20,17 @@
   $('mail-config-form').addEventListener('submit',e=>{e.preventDefault();if(!busy&&!connected)configure();});
   action('mail-connect',async()=>{
    if(busy||!api)return;busy=true;const own=++generation;controls();$('mail-status').textContent='Connexion Microsoft en cours…';
-   try{const info=await api.connect();if(own!==generation)return;connected=true;accountName=info.name;$('mail-setup').open=false;statuses.clear();edits.clear();bilan=null;busy=false;controls();await refresh();}
+   try{const info=await api.connect();if(own!==generation)return;connected=true;needsLogin=false;accountName=info.name;$('mail-setup').open=false;statuses.clear();edits.clear();bilan=null;busy=false;controls();await refresh();}
    catch{if(own===generation)$('mail-status').textContent='Connexion non terminée. Réessaie et autorise la fenêtre Microsoft. Sur iPhone, essaie aussi depuis Safari.';}
    finally{if(own===generation){busy=false;controls();}}
   });
   action('mail-disconnect',async()=>{
-   generation++;if(lastSummary&&$('coach-message').textContent===lastSummary){$('coach-message').textContent='Qu’est-ce qui compte pour toi aujourd’hui ?';$('coach-mode').textContent='Conseils adaptés à ta journée';}if(lastPreparedTitle)forget(lastPreparedTitle);lastSummary='';lastPreparedTitle='';connected=false;busy=false;bilan=null;accountName='';statuses.clear();edits.clear();$('mail-list').replaceChildren();$('mail-detail').replaceChildren();$('mail-search').value='';controls();$('mail-status').textContent='Outlook déconnecté. Le bilan et les réponses locales ont été effacés de cette session.';try{await api?.disconnect();}catch{feedback('Session locale fermée. Ferme l’application avant une nouvelle connexion.');api=null;controls();}
+   generation++;if(lastSummary&&$('coach-message').textContent===lastSummary){$('coach-message').textContent='Qu’est-ce qui compte pour toi aujourd’hui ?';$('coach-mode').textContent='Conseils adaptés à ta journée';}if(lastPreparedTitle)forget(lastPreparedTitle);lastSummary='';lastPreparedTitle='';connected=false;needsLogin=false;busy=false;bilan=null;accountName='';statuses.clear();edits.clear();$('mail-list').replaceChildren();$('mail-detail').replaceChildren();$('mail-search').value='';controls();$('mail-status').textContent='Outlook déconnecté. Le bilan et les réponses locales ont été effacés de cette session.';try{await api?.disconnect();}catch{feedback('Session locale fermée. Ferme l’application avant une nouvelle connexion.');api=null;controls();}
   });
   async function refresh(){
    if(!connected||busy)return;busy=true;const own=generation;controls();$('mail-status').textContent=bilan?'Vérification du dernier bilan…':'Lecture du bilan privé Outlook…';
    try{const result=await api.snapshot();if(own!==generation)return;bilan=result;lastRefresh=Date.now();draw();$('mail-status').textContent=result?'Bilan chargé. Dernière vérification des mails : '+dateLabel(result.checkedDate)+'.'+(result.skipped?' Un ancien brouillon de bilan illisible a été ignoré.':''):'Aucun bilan MOMENTUM dans les brouillons Outlook. L’agent quotidien doit y enregistrer son premier bilan.';}
-   catch(err){if(own===generation)$('mail-status').textContent=err.message+(bilan?' Le bilan précédent reste affiché.':'');}
+   catch(err){if(own===generation){if(/session Microsoft a expiré/.test(err.message))needsLogin=true;$('mail-status').textContent=err.message+(bilan?' Le bilan précédent reste affiché.':'');}}
    finally{if(own===generation){busy=false;controls();}}
   }
   function dateLabel(date){return new Intl.DateTimeFormat('fr-FR',{dateStyle:'long',timeZone:'Europe/Paris'}).format(new Date(date+'T12:00:00Z'));}
