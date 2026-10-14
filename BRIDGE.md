@@ -49,7 +49,7 @@ Ne pas modifier directement un fichier signé : sa signature deviendrait invalid
 Clé localStorage momentum.v1 conservée, sans migration. Les tâches, offres, préférences et historique existants restent dans leur origine actuelle.
 Le correctif PWA de cette branche conserve l'alerte 0 et bloque la transmission si la sauvegarde échoue.
 La V0.8 actuellement installée remplace encore le choix 0 par 30 si elle n'a pas reçu ce correctif ; le raccourci ne peut pas retrouver une valeur perdue dans le JSON.
-Aucune fusion ni publication de main réalisée. Les réglages existants proposent désormais le fichier importable dans la même carte Bridge.
+La mise en production V0.8.1 est suivie dans la PR #1. La publication conserve la clé momentum.v1 et renouvelle seulement les anciens caches MOMENTUM. Les réglages existants proposent désormais le fichier importable dans la même carte Bridge.
 Le service worker inclut bridge.js ; le fichier de raccourci n'est pas mis en cache pour permettre les mises à jour d'installation.
 
 Références Apple :
