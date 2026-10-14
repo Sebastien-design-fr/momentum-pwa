@@ -3,7 +3,7 @@ const KEY='momentum.v1';
 const seed=()=>({name:'',tone:'balanced',tasks:[{id:crypto.randomUUID(),title:'Consacrer 20 minutes à ma recherche d’emploi',category:'Emploi',done:false},{id:crypto.randomUUID(),title:'Bouger ou prendre l’air 20 minutes',category:'Bien-être',done:false}],jobs:[],coachHistory:[],coachLastDate:''});
 function sanitize(x){if(!x||typeof x!=='object')throw Error('Format invalide');return {name:String(x.name||'').slice(0,45),tone:['balanced','gentle','firm'].includes(x.tone)?x.tone:'balanced',tasks:Array.isArray(x.tasks)?x.tasks.slice(0,500).map(t=>({id:String(t.id||crypto.randomUUID()),title:String(t.title||'').slice(0,120),category:['Emploi','Maison','Bien-être','Projet'].includes(t.category)?t.category:'Projet',done:!!t.done,due: /^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',duration:[30,60,90,120].includes(Number(t.duration))?Number(t.duration):60,alert:[0,15,30,60,1440].includes(Number(t.alert))?Number(t.alert):30,calendarExported:!!t.calendarExported,bridgeLaunched:!!t.bridgeLaunched,time:/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time||'')?t.time:'14:00'})).filter(t=>t.title):[],jobs:Array.isArray(x.jobs)?x.jobs.slice(0,500).map(j=>({id:String(j.id||crypto.randomUUID()),title:String(j.title||'').slice(0,150),link:typeof j.link==='string'&&/^https?:\/\//i.test(j.link)?j.link.slice(0,2000):'',status:['À étudier','Candidature préparée','Envoyée','Entretien','Refusée'].includes(j.status)?j.status:'À étudier',followup:/^\d{4}-\d{2}-\d{2}$/.test(j.followup||'')?j.followup:''})).filter(j=>j.title):[],coachHistory:Array.isArray(x.coachHistory)?x.coachHistory.slice(-60).filter(m=>m&&['moi','coach'].includes(m.role)).map(m=>({role:m.role,text:String(m.text||'').slice(0,1200)})):[],coachLastDate:typeof x.coachLastDate==='string'?x.coachLastDate.slice(0,10):''};}
 let state;try{state=sanitize(JSON.parse(localStorage.getItem(KEY)))}catch{state=seed()}
-const $=id=>document.getElementById(id),save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch{alert('Stockage indisponible : les modifications risquent de ne pas être conservées.')}};
+const $=id=>document.getElementById(id),save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch{alert('Stockage indisponible : tâche non transmise à Apple. Libère de l’espace puis réessaie.');return false}return true;};
 const addText=(parent,tag,text,cls)=>{const el=document.createElement(tag);el.textContent=text;if(cls)el.className=cls;parent.append(el);return el};
 const fmt=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long'});$('today').textContent=fmt.format(new Date());
 function navigate(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id);document.querySelectorAll('[data-nav]').forEach(b=>{const active=b.dataset.nav===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});window.scrollTo({top:0,behavior:'instant'});}
@@ -104,22 +104,16 @@ $('smart-form').addEventListener('submit',async e=>{
 });
 $('weather-check').addEventListener('click',async()=>{const node=$('weather-report');node.textContent='Consultation de la météo…';try{const d=await loadWeather($('weather-city').value.trim()||'Rozay-en-Brie');const best=forecastStatus(d.hourly);node.textContent=d.location.name+' : '+(best?'Prochain créneau sec possible : '+best.date+' vers '+best.time+'.':'Aucun créneau idéal sur 7 jours selon nos critères.')}catch(err){node.textContent='Météo indisponible : '+err.message}});
 $('plan-cancel').addEventListener('click',()=>{$('smart-preview').hidden=true;planCandidate=null});
-$('plan-confirm').addEventListener('click',()=>{if(!planCandidate)return;const title=$('plan-title').value.trim().slice(0,120),due=$('plan-date').value,time=$('plan-time').value||'14:00';if(!title){alert('Indique une tâche.');return}if(!due){alert('Choisis une date pour ajouter cette tâche au calendrier Apple.');return}if(due&&!/^\d{4}-\d{2}-\d{2}$/.test(due)){alert('Date invalide');return}if(due&&due<dateStr(new Date())){alert('Choisis une date à venir.');return}const item={id:crypto.randomUUID(),title,category:planCandidate.category,done:false,due,time,duration:Number($('plan-duration').value)||60,alert:Number($('plan-alert').value)||30};state.tasks.unshift(item);save();render();$('smart-preview').hidden=true;$('smart-text').value='';planCandidate=null;$('weather-report').textContent='Demande transmise à Raccourcis Apple. Vérifie que l’événement a été créé dans Calendrier.';launchAppleBridge(item);});
+$('plan-confirm').addEventListener('click',()=>{if(!planCandidate)return;const title=$('plan-title').value.trim().slice(0,120),due=$('plan-date').value,time=$('plan-time').value||'14:00';if(!title){alert('Indique une tâche.');return}if(!due){alert('Choisis une date pour ajouter cette tâche au calendrier Apple.');return}if(due&&!/^\d{4}-\d{2}-\d{2}$/.test(due)){alert('Date invalide');return}if(due&&due<dateStr(new Date())){alert('Choisis une date à venir.');return}const item={id:crypto.randomUUID(),title,category:planCandidate.category,done:false,due,time,duration:Number($('plan-duration').value)||60,alert:Number($('plan-alert').value)};try{MomentumBridge.build(item)}catch(err){alert(err.message);return}state.tasks.unshift(item);if(!save()){state.tasks.shift();return}render();$('smart-preview').hidden=true;$('smart-text').value='';planCandidate=null;$('weather-report').textContent='Demande transmise à Raccourcis Apple. Vérifie que l’événement a été créé dans Calendrier.';launchAppleBridge(item);});
 function renderUpcoming(){const node=$('home-upcoming');node.replaceChildren();const list=state.tasks.filter(x=>!x.done&&x.due).sort((a,b)=>(a.due+a.time).localeCompare(b.due+b.time)).slice(0,3);if(!list.length){node.textContent='Aucune tâche datée pour le moment.';return}for(const t of list)addText(node,'div',`${t.due} ${t.time||'14:00'} · ${t.title}`);}
-// V0.7 : pont iOS. L’URL ne garantit pas l’écriture réelle dans Calendrier.
-const BRIDGE_NAME='MOMENTUM Bridge';
+// Opening Shortcuts does not acknowledge a Calendar write.
 function launchAppleBridge(task){
- if(!task.due){alert('Il faut choisir une date pour programmer dans Apple Calendrier.');return;}
- const minutes=Number(task.duration)||60;
- const start=new Date(task.due+'T'+(task.time||'14:00')+':00');
- if(Number.isNaN(start.getTime())){alert('Date incorrecte.');return;}
- const end=new Date(start.getTime()+minutes*60000);
- const local=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
- const data={title:task.title,start:local(start),end:local(end),alert:Number(task.alert??30),id:task.id,notes:'Momentum-ID: '+task.id};
- // Un callback depuis Raccourcis vers la PWA n'est pas disponible de façon fiable.
- task.bridgeLaunched=true;save();render();
- const url='shortcuts://run-shortcut?name='+encodeURIComponent(BRIDGE_NAME)+'&input=text&text='+encodeURIComponent(JSON.stringify(data));
- window.location.assign(url);
+ let data;try{data=MomentumBridge.build(task)}catch(err){alert(err.message);return}
+ task.bridgeLaunched=true;
+ if(!save()){task.bridgeLaunched=false;return}
+ render();
+ try{window.location.assign(MomentumBridge.url(data))}
+ catch(err){$('weather-report').textContent='Tâche conservée. Lancement de Raccourcis impossible : '+err.message;}
 }
 const shortcutButton=$('open-shortcuts');
 if(shortcutButton)shortcutButton.addEventListener('click',()=>{location.assign('shortcuts://');});
