@@ -24,6 +24,15 @@ https://support.apple.com/guide/shortcuts-mac/sync-shortcuts-apdb3a4240b0/mac
 Apple documente la signature d'un fichier existant :
 https://support.apple.com/en-gb/guide/shortcuts-mac/apd455c82f02/mac
 
+Versions cibles indiquées : iOS 26.6.2 et macOS Sequoia 15.7.2.
+Inspection de Raccourcis sur le Mac : Ajouter un nouvel évènement propose bien
+Au moment de l’évènement, 15 minutes, 30 minutes, 1 heure et 1 jour avant,
+ainsi que le réglage Afficher la feuille de composition. Les branches par alerte sont donc
+une piste concrète sur Mac ; leur fonctionnement sur iPhone reste à valider.
+Un prototype distinct « MOMENTUM Bridge — développement » a été créé pour inspecter les actions.
+Il est incomplet et ne doit pas être utilisé comme passerelle de production.
+L’export signé d’une action de référence a été récupéré après un délai ; il ne constitue pas le Bridge.
+
 La commande shortcuts sign est disponible dans cet environnement. Elle signe un raccourci existant ;
 elle ne fournit pas de commande de création de ses actions.
 Aucun .shortcut signé ou lien iCloud testé n'est livré à ce stade.
