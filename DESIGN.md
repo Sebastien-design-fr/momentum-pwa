@@ -44,7 +44,7 @@ components:
 
 Carnet de route personnel sur iPhone : convertir une intention en un prochain pas puis en un créneau. Le registre est celui d’un outil quotidien, pas d’une page commerciale. L’utilisateur francophone dispose d’un iPhone 16 Pro Max et demande une nouvelle palette. La signature est la fiche de créneau à liseré cuivre, seule surface expressivement différente. Éviter les statistiques géantes, les dégradés de fond et la multiplication des cartes identiques.
 
-Propriétaire des tokens : CSS `:root` de `index.html` (modèle B). Ce fichier documente les valeurs acceptées. Mapping : primary → --blue / boutons, liens, focus ; background → --paper / page ; text → --ink ; muted → --sub ; calendar → --copper / fiche de rendez-vous ; success → --jade / progression et tâches terminées. Danger → bouton de suppression et erreurs. Radius et espacement sont les recettes des classes partagées du même fichier. Les styles des six écrans consomment ces propriétaires, sans bibliothèque de thème parallèle.
+Propriétaire des tokens : CSS `:root` de `index.html` (modèle B). Ce fichier documente les valeurs acceptées. Mapping : primary → --blue / boutons, liens, focus ; background → --paper / page ; text → --ink ; muted → --sub ; calendar → --copper / fiche de rendez-vous ; success → --jade / progression et tâches terminées. Danger → bouton de suppression et erreurs. Radius et espacement sont les recettes des classes partagées du même fichier. Les styles des cinq écrans consomment ces propriétaires, sans bibliothèque de thème parallèle.
 
 ## Colors
 
@@ -56,7 +56,7 @@ Corps système Apple à 16 px ; titres arrondis 22–30 px. Les textes sont fran
 
 ## Layout
 
-Largeur maximale 680 px, gouttière 22 px ou 16 px sur téléphone étroit. Les six écrans utilisent le défilement naturel du document. Navigation fixe en bas, marges de sécurité iPhone ; les champs disposent d’une marge de défilement pour le focus. Les champs de date/heure et durée/alerte forment deux colonnes, puis une colonne sous 350 px. Mail conserve le défilement naturel : liste puis détail sur iPhone, deux colonnes au-delà de 640 px. La navigation à six destinations conserve les libellés ; Aujourd’hui est abrégé en Jour. Le bilan daté et le liseré de sélection bleu indiquent le dossier actif sans ajouter de nouvelle palette.
+Largeur maximale 680 px, gouttière 22 px ou 16 px sur téléphone étroit. Les cinq écrans utilisent le défilement naturel du document. Navigation fixe en bas, marges de sécurité iPhone ; les champs disposent d’une marge de défilement pour le focus. Les champs de date/heure et durée/alerte forment deux colonnes, puis une colonne sous 350 px. La navigation retrouve ses cinq destinations : Aujourd’hui, Actions, Coach, Emploi et Réglages.
 
 ## Elevation & Depth
 

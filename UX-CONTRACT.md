@@ -2,7 +2,7 @@
 
 ## Product context
 
-Compagnon personnel français pour iPhone, six écrans : Aujourd’hui (Jour dans la navigation), Actions, Coach, Emploi, Mail, Réglages. Accessibilité visée WCAG 2.2 AA. Dates stockées YYYY-MM-DD ; heures locales de l’appareil ; instants ISO calculés par Bridge. L’usage de référence est Europe/Paris. Japon non applicable. Connexion Mail Microsoft déléguée, sans serveur supplémentaire, selon MAIL.md.
+Compagnon personnel français pour iPhone, cinq écrans : Aujourd’hui, Actions, Coach, Emploi, Réglages. Accessibilité visée WCAG 2.2 AA. Dates stockées YYYY-MM-DD ; heures locales de l’appareil ; instants ISO calculés par Bridge. L’usage de référence est Europe/Paris. Japon et authentification Microsoft non applicables.
 
 ## Business-context sources
 
@@ -53,18 +53,8 @@ Calendar side effects are never launched by model text. The same title and start
 
 ## Validation
 
-Forms use novalidate and application errors. Required title, exact date/time, future timestamp, allowed duration/alert, DST validity and duplicates are checked before write. Explicit unsupported durations are never silently rounded. Missing fields are described in text and invalid fields reference the existing error slot. Select/date popup semantics stay OS-owned. Microsoft Mail settings use the same fieldError helper; no password or secret field exists.
+Forms use novalidate and application errors. Required title, exact date/time, future timestamp, allowed duration/alert, DST validity and duplicates are checked before write. Explicit unsupported durations are never silently rounded. Missing fields are described in text and invalid fields reference the existing error slot. Select/date popup semantics stay OS-owned. No secrets or accounts.
 
 ## Verification
 
 Node tests: TZ=Europe/Paris node --test tests/*.test.cjs. Calendar-flow tests execute the actual application code with intercepted external URL dispatch, including one-confirmation, cancellation, duplicates and storage failure. They do not create real Calendar events. Browser checks cover narrow layout, draft editing, keyboard, native popup, cancel dialog, empty/error states and sibling screens. Physical iPhone GPU and keyboard behavior remain user-device checks.
-
-## Mail contract (V0.11)
-
-Business source: user requests daily Outlook dashboard integration; MAIL.md defines private transport, schema, delegated permissions, execution limits and retention. mail.js owns snapshot validation, authentication and read-only Graph transport. mail-ui.js owns the reusable mail list/detail/filters and transient status/draft edits; all results use shared feedback/fieldError. Existing action registry/navigation and showCoachDraft are reused. Native dates/selects remain unchanged.
-
-No table selection or bulk action. Mail renders a bounded report (200 actions), local search with a visible clear button, priority order, and stable selection while filtering. Empty/no-results states include recovery. Detail focuses its heading after explicit selection. Config → register public client ID → login popup → load last report. Invalid IDs remain in the form; connection refusal shows retry. Refresh is duplicate-guarded, timeout-bounded per request and stale-safe by session generation. Error preserves the old in-memory report. Daily checking is performed by the existing Codex automation at 9 h Europe/Paris when its environment is available; PWA refresh reads the latest report, not the inbox itself. Last actual checked date is always visible.
-
-Logout clears report, edits, local statuses and its transient coach summary/unedited prepared draft; it does not revoke all Microsoft browser sessions or delete user-validated tasks. Unsaved reply edits explicitly last for this session only. No mail body enters persistent coach history, local backup or service-worker cache. Read-only Mail.Read is broader than just report access and is disclosed. No Mail.Send or PWA write endpoint. Preparing a calendar entry has blank date/time and no write until the canonical confirmation.
-
-Verification evidence: tests/mail.test.cjs and tests/mail-ui.test.cjs. Physical Microsoft login/consent on iPhone remains dependent on the user's app registration. Fixtures for visual verification are fictional and stay outside the published repository.
