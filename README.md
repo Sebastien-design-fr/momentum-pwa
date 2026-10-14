@@ -53,4 +53,12 @@ Une fiche n’est pas une tâche enregistrée : Annuler ne crée rien. Les deman
 
 Nouvelle palette claire gris bleuté / ardoise / bleu, fiche calendrier cuivre, progression verte. Les cinq écrans, données momentum.v1, identifiants et fichier signé Bridge sont conservés. DESIGN.md et UX-CONTRACT.md documentent les choix. Les formulaires, confirmations, erreurs et actions utilisent les primitives partagées ; les dates et listes gardent les contrôles natifs iPhone.
 
-Validation V0.10 : 25 tests Node, dont exécution du code complet avec interception de l’ouverture externe. Aucun de ces tests ne crée un événement Apple. Audit statique Premium strict et lint DESIGN.md exécutés séparément. Contrôle navigateur des clarifications, champs modifiables, annulation, clavier, confirmations et vues 320/440 px. Le raccourci demeure celui déjà testé et confirmé par l’utilisateur ; le nouveau parcours dans la PWA installée reste à essayer sur l’iPhone.
+Validation V0.10 : 38 tests Node, dont exécution du code complet avec interception de l’ouverture externe. Aucun de ces tests ne crée un événement Apple. Audit statique Premium strict et lint DESIGN.md exécutés séparément. Contrôle navigateur des clarifications, champs modifiables, annulation, clavier, confirmations et vues 320/440 px. Le raccourci demeure celui déjà testé et confirmé par l’utilisateur ; le nouveau parcours dans la PWA installée reste à essayer sur l’iPhone.
+
+## V0.11 : Mail
+
+Sixième onglet : bilan Outlook privé, filtres À traiter / À répondre / Traités / Tout, recherche, liens sources et brouillons, réponse à copier, priorités dans le coach et préparation d’un créneau à valider. Aucun envoi de mail. La configuration Microsoft reste nécessaire une seule fois : [MAIL.md](MAIL.md). Le tableau n’est pas embarqué avec les données réelles dans GitHub.
+
+L’agent Codex quotidien existant alimente un brouillon privé sans destinataire à 9 h Europe/Paris, si Codex et Outlook sont accessibles. MOMENTUM consulte le dernier bilan après connexion et signale sa date réelle. L’actualisation ne dépend pas d’une PWA iPhone fonctionnant en arrière-plan. Les statuts/retouches Mail durent pour la session, contrairement aux tâches validées qui gardent leur sauvegarde existante.
+
+MSAL Browser 5.25.1 (licence MIT) et son redirect bridge sont embarqués depuis le registre officiel npm, pas un CDN. Le runtime WebLLM optionnel est désormais dans un Worker séparé, sans accès aux jetons ni au DOM des mails ; il reste téléchargé depuis le CDN versionné existant. Les messages Mail ne sont pas ajoutés à son contexte. Aucun coût de service supplémentaire prévu, sous réserve de pouvoir inscrire l’application Microsoft sans abonnement payant.
