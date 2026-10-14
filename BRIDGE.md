@@ -1,71 +1,58 @@
-# MOMENTUM Bridge — état de développement
+# MOMENTUM Bridge — raccourci importable
 
-## Analyse de la V0.8
-PWA statique sans serveur ni dépendances. Données dans localStorage, clé momentum.v1.
-La validation du planificateur crée la tâche puis ouvre shortcuts://run-shortcut.
-Aucun raccourci livré dans le dépôt. bridgeLaunched signifie seulement une tentative de lancement.
-Le choix d'alerte 0 était remplacé par 30 à cause de ||30.
-Aucune modification d'interface ou de clé de stockage dans cette branche.
+Le fichier signé `shortcuts/MOMENTUM Bridge.shortcut` crée un événement à partir du JSON transmis par la validation MOMENTUM. Le titre utilise la vraie valeur title ; il ne contient pas le texte fixe « Titre ». Les cinq alertes sont configurées par branches à égalité exacte. Aucun réseau, script, abonnement ou saisie supplémentaire dans le raccourci.
 
-## Implémentation
-bridge.js centralise et valide le contrat. Les clés historiques title/start/end/alert/id/notes restent compatibles.
-Les nouvelles clés startISO/endISO/alertISO fixent les instants UTC, duration et version précisent le contrat.
-Le raccourci final doit préférer les dates ISO pour éviter les ambiguïtés de changement d'heure.
-Les heures locales inexistantes sont refusées avant la sauvegarde.
-Une erreur de stockage bloque la transmission et laisse la proposition disponible.
-Aucun serveur, abonnement, export manuel de tâches ou accès iCloud avec identifiants.
-Supprimer/cocher une tâche MOMENTUM ne modifie pas un événement Apple existant.
+## Installer
+Ouvrir le fichier signé dans Raccourcis, conserver le nom exact MOMENTUM Bridge et remplacer l'ancienne version si nécessaire. Un seul raccourci doit porter ce nom.
+Le raccourci utilise le calendrier par défaut de chaque appareil. Choisir un calendrier iCloud pour synchroniser les événements.
+La synchronisation iCloud de Raccourcis doit être activée sur Mac et iPhone avec le même compte Apple.
+L'installation et les autorisations initiales sont nécessaires. Ne pas lancer le raccourci seul pour créer une tâche : sa donnée d'entrée vient de MOMENTUM.
 
-## Raccourci importable et iCloud
-Apple documente le lancement avec texte :
-https://support.apple.com/en-ke/guide/shortcuts/apd624386f42/ios
-Apple documente la synchronisation des raccourcis entre appareils du même compte :
-https://support.apple.com/guide/shortcuts-mac/sync-shortcuts-apdb3a4240b0/mac
-Apple documente la signature d'un fichier existant :
-https://support.apple.com/en-gb/guide/shortcuts-mac/apd455c82f02/mac
+## Contrat
+Texte JSON contenant title, id, start, end et alert.
+Dates V0.8 start/end : YYYY-MM-DD HH:mm, heure locale.
+Lorsque startISO/endISO sont présents, ils ont priorité et fixent les instants UTC.
+Les alertes acceptées sont 0, 15, 30, 60, 1440 minutes.
+Les notes sont construites par le raccourci : Momentum-ID: id.
+La recherche de doublons utilise les notes exactes et la date de début, dans tous les calendriers accessibles.
+Un champ obligatoire manquant, une date illisible ou une alerte non acceptée arrête le raccourci.
+Le raccourci ne met pas à jour les événements existants et ne propage pas les suppressions ou les coches MOMENTUM.
+Un changement de créneau du même identifiant n'est pas traité comme une mise à jour.
 
-Versions cibles indiquées : iOS 26.6.2 et macOS Sequoia 15.7.2.
-Inspection de Raccourcis sur le Mac : Ajouter un nouvel évènement propose bien
-Au moment de l’évènement, 15 minutes, 30 minutes, 1 heure et 1 jour avant,
-ainsi que le réglage Afficher la feuille de composition. Les branches par alerte sont donc
-une piste concrète sur Mac ; leur fonctionnement sur iPhone reste à valider.
-Un prototype distinct « MOMENTUM Bridge — développement » a été créé pour inspecter les actions.
-Il est incomplet et ne doit pas être utilisé comme passerelle de production.
-L’export signé d’une action de référence a été récupéré après un délai ; il ne constitue pas le Bridge.
+## Validation réelle, 14 octobre 2026
+macOS Sequoia 15.7.2 :
+- Import du fichier signé réussi ; raccourci installé sous MOMENTUM Bridge.
+- Lancement par shortcuts://run-shortcut avec input=text, identique au protocole de la PWA.
+- Titre TEST MOMENTUM — Garage & café correctement affiché.
+- Événement du 15 octobre, 18:10–18:40 ; durée 30 minutes ; notes avec l'identifiant reçu.
+- Alertes vérifiées dans les événements Apple : au début, 15 minutes, 30 minutes, 1 heure, 1 jour avant.
+- Durée 90 minutes et conversion ISO UTC vers l'heure locale vérifiées.
+- Après correction du filtre, deux lancements d'un nouvel identifiant conservent un seul événement.
+- Alerte invalide 115 : aucun événement créé.
+- Destination constatée sur ce Mac : Travail, appartenant à iCloud.
+- Les six événements fictifs créés pendant la recette ont été supprimés ; aucun événement utilisateur supprimé.
+- Signature du fichier final vérifiée et contenu relu : cinq égalités exactes, références du filtre présentes.
+- 5 tests de structure passent ; 4 tests JavaScript de transmission passent.
 
-La commande shortcuts sign est disponible dans cet environnement. Elle signe un raccourci existant ;
-elle ne fournit pas de commande de création de ses actions.
-Aucun .shortcut signé ou lien iCloud testé n'est livré à ce stade.
-Un fichier plist construit avec des identifiants privés non vérifiés ne serait pas une garantie d'importation.
-Étape restante : construire et exporter le raccourci dans Raccourcis Apple, tester son import sur iPhone,
-puis signer l'export pour distribution. La synchronisation iCloud du raccourci n'est pas celle des données
-localStorage MOMENTUM. Choisir un calendrier iCloud si les événements doivent apparaître sur Mac et iPhone.
+Non vérifié : lancement depuis la PWA sur iOS 26.6.2, retour à la PWA, livraison effective d'une notification, refus/révocation des permissions et synchronisation sur l'iPhone.
+Les permissions et dialogues système Apple peuvent imposer une interaction initiale. L'ouverture du raccourci n'est pas une preuve de création pour la PWA ; le statut local reste « non confirmé ».
 
-## Contrat du raccourci à valider sur appareil
-1. Recevoir le texte JSON et obtenir son dictionnaire. Refuser une version inconnue ou un champ manquant.
-2. Extraire title, id, startISO, endISO, alert et notes. Convertir les instants ISO en dates.
-3. Choisir une fois le calendrier de destination, sans demander une sélection à chaque exécution.
-4. Chercher dans ce calendrier un événement avec la note exacte Momentum-ID: id.
-   Si les filtres de notes ne sont pas disponibles, chercher sur l'intervalle début/fin puis comparer
-   explicitement les notes. Ne pas se contenter du titre, et ne pas limiter la recherche au premier résultat.
-5. Si déjà présent, terminer sans créer de doublon.
-6. Ajouter un événement avec dates, titre et notes, et désactiver l'écran de composition.
-7. Vérifier les alertes : si la valeur dynamique n'est pas acceptée, utiliser des branches par valeur
-   0/15/30/60/1440 avec actions configurées. Si cela n'est pas disponible sur la version cible,
-   l'exigence d'alertes variables reste non satisfaite ; ne pas remplacer silencieusement par une valeur fixe.
-8. Accorder les permissions système une fois. Aucune nouvelle saisie ou validation métier à chaque tâche.
+## Sources et reproduction
+MOMENTUM Bridge.plist : source lisible du fichier exporté par Apple, sans données de tâches personnelles.
+build_bridge.py : générateur sans dépendance tierce ; écrit seulement dans shortcuts/draft.
+test_shortcut_structure.py : contrôles des références, groupes, champs, alertes et filtre.
+Commande : python3 shortcuts/build_bridge.py puis python3 shortcuts/test_shortcut_structure.py.
+Pour distribuer une nouvelle génération, signer le fichier draft avec shortcuts sign, importer et reprendre les tests Apple. La signature seule ne valide pas le comportement.
+Ne pas modifier directement un fichier signé : sa signature deviendrait invalide.
 
-La PWA n'accède pas directement à EventKit. L'ouverture d'une URL ne prouve pas une écriture dans Calendrier.
-iOS peut afficher un dialogue de lancement ou d'autorisation ; le code web ne peut le supprimer.
-Aucune exécution automatique en arrière-plan n'est implémentée.
+## PWA et données
+Clé localStorage momentum.v1 conservée, sans migration. Les tâches, offres, préférences et historique existants restent dans leur origine actuelle.
+Le correctif PWA de cette branche conserve l'alerte 0 et bloque la transmission si la sauvegarde échoue.
+La V0.8 actuellement installée remplace encore le choix 0 par 30 si elle n'a pas reçu ce correctif ; le raccourci ne peut pas retrouver une valeur perdue dans le JSON.
+Aucune fusion ni publication de main réalisée. Les réglages existants proposent désormais le fichier importable dans la même carte Bridge.
+Le service worker inclut bridge.js ; le fichier de raccourci n'est pas mis en cache pour permettre les mises à jour d'installation.
 
-## Validation
-TZ=Europe/Paris node --test tests/bridge.test.cjs : 4 tests passent.
-node --check app.js : passe.
-Tests : toutes les durées/alertes, alerte zéro, URL/JSON exacts, Unicode, minuit,
-dates impossibles et changements d'heure.
-Non testé : navigation réelle PWA→Raccourcis, import/signature, écriture Calendrier,
-alertes et absence de doublons dans Apple, permissions refusées et synchronisation iCloud.
-Recette iPhone : tester chaque alerte, deux tâches de même titre avec IDs distincts,
-deux exécutions du même ID, refus de permission, calendrier iCloud, changement d'heure.
-Ne pas fusionner/déployer avant cette recette. main et la version installée restent inchangées.
+Références Apple :
+- https://support.apple.com/en-ke/guide/shortcuts/apd624386f42/ios
+- https://support.apple.com/guide/shortcuts-mac/sync-shortcuts-apdb3a4240b0/mac
+- https://support.apple.com/en-gb/guide/shortcuts-mac/apd455c82f02/mac

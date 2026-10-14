@@ -39,17 +39,18 @@
   <section id="settings" class="screen" hidden><h1>Réglages</h1><div class="card stack"><div class="field"><label for="profile-name">Comment t'appeler ?</label><input id="profile-name" maxlength="45" placeholder="Ton prénom"/></div><div class="field"><label for="coach-tone">Ton style de coaching</label><select id="coach-tone"><option value="balanced">Équilibré</option><option value="gentle">Bienveillant</option><option value="firm">Exigeant</option></select></div><button class="btn" id="save-settings">Enregistrer</button></div><div class="card"><strong>Mes données</strong><p class="muted small">Tout reste sur cet appareil. Sans synchronisation, une suppression des données Safari peut effacer ta progression.</p><div class="actions"><button class="btn secondary" id="export-data">Exporter ma sauvegarde</button><label class="btn secondary" for="import-file" style="display:inline-flex;align-items:center">Importer une sauvegarde</label><input id="import-file" type="file" accept="application/json,.json" hidden/><button class="btn ghost" id="reset-data">Réinitialiser</button></div><p class="muted small" id="settings-status" aria-live="polite"></p></div><div class="card stack"><strong>🍎 Passerelle Apple — MOMENTUM Bridge</strong>
 <p class="small muted">Configuration nécessaire une seule fois : le raccourci « MOMENTUM Bridge » doit être installé et autorisé. Ensuite, le bouton de validation déclenche la passerelle Apple.</p>
 <div class="notice small">La création sans nouvelle saisie est possible si le raccourci est configuré et si iOS autorise son lancement. La PWA ne peut pas vérifier seule que l’événement a été créé. Le premier essai peut demander des permissions système.</div>
-<details><summary style="cursor:pointer;font-weight:750;padding:10px 0">🛠️ Configuration du raccourci (une seule fois)</summary>
+<details><summary style="cursor:pointer;font-weight:750;padding:10px 0">🛠️ Installer le raccourci (une seule fois)</summary>
+<p class="small muted">Le raccourci reçoit automatiquement le titre, les dates et l’alerte depuis Momentum. Aucun champ n’est à recopier.</p>
+<p><a class="btn secondary small" href="./shortcuts/MOMENTUM%20Bridge.shortcut">Installer MOMENTUM Bridge ↗</a></p>
 <ol class="small muted" style="line-height:1.8;padding-left:22px">
-<li>Ouvre <b>Raccourcis</b> sur l’iPhone, crée un nouveau raccourci nommé exactement <b>MOMENTUM Bridge</b>.</li>
-<li>Ajoute <b>Obtenir le dictionnaire à partir de l’entrée</b> (« Entrée du raccourci ») : Momentum transmet du texte JSON.</li>
-<li>Avec <b>Obtenir la valeur du dictionnaire</b>, lis les clés <code>title</code>, <code>start</code>, <code>end</code>, <code>alert</code> et <code>id</code>.</li>
-<li>Convertis <code>start</code> et <code>end</code> en dates avec l’action <b>Date</b> / <b>Obtenir les dates de l’entrée</b> (format local « 2026-10-15 14:00 »).</li>
-<li>Ajoute l’action <b>Ajouter un nouvel événement</b> : titre = <code>title</code>, début = <code>start</code>, fin = <code>end</code>. Configure son calendrier de destination et désactive <b>Afficher lors de l’exécution</b> si proposé.</li>
-<li>Dans l’action d’événement, définis l’alerte par la valeur <code>alert</code> si l’action l’accepte ; sinon sélectionne une alerte fixe (ex. 30 minutes) et ne considère pas le choix personnalisé comme synchronisé.</li>
-<li>Pour éviter les doublons, ajoute avant la création <b>Rechercher les événements du calendrier</b> avec un identifiant dans les notes (<code>Momentum-ID: id</code>) puis crée uniquement si aucun événement ne correspond. Les filtres disponibles varient selon iOS.</li>
-<li>Exécute une fois le raccourci manuellement pour accorder les permissions. Reviens dans Momentum et crée une tâche test.</li>
-</ol></details>
+<li>Ouvre le fichier signé dans Raccourcis et ajoute-le sous le nom exact <b>MOMENTUM Bridge</b>. Si une ancienne version existe, remplace-la afin de garder un seul raccourci de ce nom.</li>
+<li>Active la synchronisation iCloud de Raccourcis sur Mac et iPhone si tu veux retrouver le même raccourci sur les deux appareils.</li>
+<li>Le raccourci utilise le calendrier par défaut de l’appareil. Choisis un calendrier iCloud dans les réglages Calendrier pour synchroniser les événements.</li>
+<li>Valide une tâche datée dans Momentum et accepte les autorisations Apple initiales si elles apparaissent. Vérifie ce premier événement dans Calendrier.</li>
+<li>Les alertes disponibles sont : au début, 15 ou 30 minutes, 1 heure ou 1 jour avant. Une nouvelle exécution du même identifiant au même début ne doit pas créer de doublon.</li>
+</ol>
+<p class="small muted">Tests effectués sur macOS Sequoia 15.7.2. Le lancement depuis la PWA iPhone reste à vérifier sur ton appareil. Cocher ou supprimer une tâche dans Momentum ne modifie pas un événement déjà créé.</p>
+</details>
 <button type="button" class="btn secondary" id="open-shortcuts">Ouvrir Raccourcis Apple ↗</button>
 
 
