@@ -68,3 +68,16 @@ Les générations de cette comparaison ont tourné localement sur Mac, sans appe
 48 tests automatisés passent. Ils vérifient le comportement de l’application et la conservation des données, pas le naturel des générations. Les nouveaux prompts français n’ont pas encore de validation conversationnelle suffisante pour justifier une publication comme amélioration de qualité du modèle. La branche de développement est livrable pour revue ; aucun déploiement de ce nouveau travail n’est effectué.
 
 Sources des versions étudiées : [WebLLM 0.2.86](https://github.com/mlc-ai/web-llm/releases/tag/v0.2.86), [Qwen3.5 2B](https://huggingface.co/Qwen/Qwen3.5-2B), [démonstration Transformers.js officielle](https://huggingface.co/spaces/webml-community/Qwen3.5-WebGPU), [Gemma 4 E2B](https://huggingface.co/google/gemma-4-E2B-it).
+
+
+## V0.12.0 — essai anonyme Pollinations Classic
+
+Le 16 octobre 2026, le service annonce `openai-fast`, GPT-OSS 20B via OVH. Accès sans compte et sans clé ; POST OpenAI compatible et prévol CORS depuis l’origine GitHub Pages vérifiés. Les essais utilisent uniquement des situations fictives. Le backend et les limites peuvent changer.
+
+Neuf réponses réelles ont été obtenues : une sonde de rédaction, cinq tours avec contexte, puis trois contrôles après précision des instructions. Refus poli et reformulation chaleureuse en deux phrases : satisfaisants, sans motif inventé. La relance après deux jours d’interruption reste dans le sujet. Les réponses sont nettement plus lisibles que celles des modèles locaux essayés, mais cette petite série ne constitue pas une mesure statistique ni une preuve de fiabilité générale.
+
+Défauts observés : rues inventées dans un premier conseil de marche ; après correction du prompt, disparition de ces noms dans le contrôle mais réponse encore trop longue. Le CV ajoute des qualités et objectifs non fournis malgré l’instruction contraire. Ce défaut demeure : ne pas présenter le modèle comme fiable pour produire des faits biographiques. Les réponses doivent être relues ; le mode en ligne est explicitement optionnel. Les capacités indisponibles sont traitées localement et les générations ne déclenchent aucune action Calendrier.
+
+Le client refuse tout paiement, ne réessaie pas automatiquement, respecte un délai de 30 secondes et gère quota, indisponibilité, annulation et réponses tronquées. Le consentement reste limité à la session et peut être retiré. Les tests automatiques valident ces protections, pas le naturel ni la véracité des générations.
+
+Validation finale : 55 tests automatisés passent, audit UI strict sans anomalie. Un dixième essai réel dans l’interface navigateur a produit deux phrases de refus sans motif inventé ; le passage navigateur → API → affichage a donc été vérifié. Aucun essai physique sur iPhone n’a été effectué.

@@ -1,5 +1,5 @@
-const CACHE='momentum-v112-coach-2';
-const ASSETS=['./','./index.html','./app.js?v=0.11.2','./bridge.js?v=0.11.2','./coach.js?v=0.11.2','./planner.js?v=0.11.2','./ai-runtime.js?v=0.11.2','./ai-worker.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='momentum-v120-online-1';
+const ASSETS=['./','./index.html','./app.js?v=0.12.0','./bridge.js?v=0.12.0','./coach.js?v=0.12.0','./planner.js?v=0.12.0','./online-coach.js?v=0.12.0','./ai-runtime.js?v=0.12.0','./ai-worker.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const staticPaths=new Set(ASSETS.map(x=>new URL(x,self.location.href).pathname));
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('momentum-')&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()]))});

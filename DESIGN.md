@@ -80,3 +80,7 @@ Icônes SVG cohérentes, traits 1.8 px, labels texte toujours présents dans la 
 - Conserver données, identifiants et passerelle existante.
 - Ne jamais annoncer qu’un événement Apple est confirmé sans preuve.
 - Ne jamais déclencher Raccourcis depuis une génération seule.
+
+## V0.12 — activation de l’IA en ligne
+
+L’identité et les cinq écrans sont conservés. Le consentement réutilise le contrôle checkbox natif, avec la recette partagée `input[type=checkbox]` et la variante de libellé long `.check-field` (44 px minimum). Les boutons, statuts aria-live et détails reprennent les propriétaires existants ; aucune nouvelle couleur ni modalité visuelle. Le mode guidé et le mode distant sont nommés explicitement.
