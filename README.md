@@ -1,4 +1,4 @@
-# MOMENTUM v0.10 — PWA iPhone
+# MOMENTUM v0.11.2 — développement, non déployé
 
 Un accueil centré sur une prochaine étape, trois actions prioritaires, et un coach adapté aux tâches et candidatures existantes. Les cinq écrans, sauvegardes et la passerelle Calendrier restent disponibles. Les données conservent la clé `momentum.v1` et leurs identifiants.
 
@@ -6,9 +6,9 @@ Un accueil centré sur une prochaine étape, trois actions prioritaires, et un c
 
 Les **conseils guidés** fonctionnent immédiatement, y compris hors ligne après installation de la PWA. Ils utilisent les échéances, les tâches non terminées, les candidatures à suivre, le temps disponible et le ton choisi.
 
-La **conversation IA locale expérimentale** s’active dans Coach → « Conversation IA sur cet appareil ». Premier téléchargement de environ 900 Mo : préférer le Wi-Fi. Aucun compte, abonnement, clé API ou serveur d’inférence. Les messages et le contexte sont traités localement ; les téléchargements techniques viennent des hébergeurs publics du moteur et du modèle.
+La **conversation IA locale expérimentale** s’active dans Coach → « Activer la conversation IA ». Premier téléchargement d’environ 900 Mo : préférer le Wi-Fi. Aucun compte, abonnement, clé API ou serveur d’inférence. Les messages et le contexte sont traités localement ; les téléchargements techniques viennent des hébergeurs publics du moteur et du modèle.
 
-Moteur WebLLM **0.2.85**, chargé à la demande depuis `esm.run`. Modèle **Qwen2.5-1.5B-Instruct**, quantifié en q4f16 si le GPU accepte `shader-f16`, sinon q4f32. Fenêtre de contexte 2048 tokens, historique et données volontairement limités.
+Moteur WebLLM **0.2.85**, chargé à la demande depuis `esm.run`. Modèle **Qwen2.5-1.5B-Instruct**, quantifié en q4f16 si le GPU accepte `shader-f16`, sinon q4f32. Fenêtre de contexte 4096 tokens, historique et données volontairement limités.
 
 Le modèle se recharge en mémoire à chaque ouverture. Son cache peut être conservé par le navigateur, mais Safari peut l’évacuer. Le chargement dépend du réseau et des caches disponibles ; la conversation IA hors ligne après fermeture n’est pas garantie. « Revenir aux conseils guidés » libère le modèle de la mémoire sans supprimer tâches ni échanges.
 
@@ -60,3 +60,16 @@ Validation V0.10 : 26 tests Node, dont exécution du code complet avec intercept
 Retrait de l’onglet Mail et de la configuration Microsoft à la demande de l’utilisateur. Navigation à cinq destinations, bibliothèque Microsoft, callback et modules Mail retirés. Les données momentum.v1, le Coach et le Bridge Calendrier sont conservés. Le runtime IA optionnel reste dans son Worker séparé et le cache applicatif garde sa liste explicite de ressources statiques.
 
 Le tableau de bord email et son agent quotidien restent indépendants dans leur discussion d’origine. MOMENTUM n’a plus de connexion à la messagerie.
+
+
+## V0.11.2 — correctifs de contexte et évaluation, non déployés
+
+Travail isolé sur dev/coach-relevance-v0112. La version installée reste la V0.11.1. Les candidats Qwen3 1.7B et Llama 3.2 3B ne sont pas retenus pour déploiement : la cohérence de Llama est meilleure dans les essais, mais le français et les reformulations ne sont pas assez naturels. Le modèle sélectionné dans le code reste Qwen2.5 1.5B ; les nouveaux prompts doivent encore passer une évaluation conversationnelle satisfaisante avant publication. Les essais complémentaires (Qwen3 4B, Qwen3.5, Transformers.js et chargement Gemma 4) n’ont pas permis de valider un remplaçant ; leurs changements de dépendances et modèles ont été retirés.
+
+Les réponses guidées sont clairement distinguées de la conversation générative, dont le bouton d’activation est visible. Aucun téléchargement automatique. Les tâches et échanges conservés sous momentum.v1 ne sont pas migrés ni supprimés.
+
+Le prompt suit la dernière demande et ses relances, sans injecter une réponse guidée ni toutes les relances emploi dans une question sans rapport. L’historique conserve jusqu’à six messages bornés. Les capacités réelles (mails, Internet, Calendrier, tracker non disponible) et les CV sans faits fournis ont des réponses déterministes. Une intention de coaching comme « je dois me remotiver demain » ne lance plus le planificateur. Une question datée ne remplit pas accidentellement une fiche en attente.
+
+Configuration de développement : WebLLM 0.2.85, Qwen2.5 1.5B q4f16/q4f32, contexte 4096, historique borné à 1500 caractères, max_tokens 384, temperature 0.5, top_p 0.9. Les éventuelles balises think sont filtrées avant affichage, y compris pendant le streaming. Les téléchargements publics du moteur/modèle restent nécessaires. Les réponses ne sont pas envoyées à un serveur d’inférence.
+
+48 tests automatisés passent ; ils couvrent le ciblage du contexte, les relances courtes, les capacités, le streaming et l’absence de création Calendrier involontaire. Ils ne mesurent pas la qualité linguistique du modèle. Voir [AI-EVALUATION.md](AI-EVALUATION.md) pour les essais réels et leurs limites. Aucun essai Mac ne prouve la compatibilité GPU/mémoire iPhone. Le carnet personnel reste une piste à développer.

@@ -6,6 +6,7 @@
  function isRequest(text){
   const s=normalize(text).trim();
   if(/\b(?:ne|n')\s*(?:\w+\s+){0,3}(?:ajout|planifi|programm)|\b(?:ajoute|programme|planifie)\s+pas\b/.test(s))return false;
+  if(/^(?:je dois|il faut que je)\b/.test(s)&&!/(?:\b(?:calendrier|agenda)\b|\b(?:a|vers)\s*\d{1,2}\s*(?:h|:))/.test(s))return false;
   return /^(?:(?:peux[- ]tu|tu peux|je voudrais|j'aimerais|est-ce que tu peux)\s+)?(?:ajoute|ajouter|programme|programmer|planifie|planifier|prevois|prevoir|rappelle[- ]moi|rappeler|note|mets|il faut que je|je dois)\b/.test(s);
  }
  function parse(text,now=new Date(),base=null){
@@ -49,6 +50,11 @@
   c.weather=/quand il fera beau|meteo|quand il ne pleuvra pas/.test(s);
   c.negated=/\b(?:ne|n')\s*(?:\w+\s+){0,3}(?:ajout|planifi|programm)|\b(?:ajoute|programme|planifie)\s+pas\b/.test(s);c.hasSchedule=Object.keys(found).length>0;c.issues=issues;return c;
  }
+ function isScheduleFollowup(text,now=new Date()){
+  const parsed=parse(text,now);if(!parsed.hasSchedule)return false;
+  const rest=normalize(parsed.title).replace(/\b(?:plutot|finalement|non|oui|et|avec|merci|alors|ce sera|s'il te plait)\b/g,'').replace(/[\s,.!?;:]+/g,'');
+  return !rest;
+ }
  function validate(c,now=new Date()){
   if(!String(c.title||'').trim())throw Error('Indique le nom de l’action.');
   if(!c.day)throw Error('Quel jour veux-tu prévoir cette action ?');
@@ -61,5 +67,5 @@
   return {...c,title:c.title.trim().slice(0,120),duration:Number(c.duration),alert:Number(c.alert)};
  }
  const same=(a,b)=>normalize(a.title||'').trim()===normalize(b.title||'').trim()&&a.due===(b.day||b.due)&&a.time===(b.clock||b.time);
- const api={isRequest,parse,validate,same};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.MomentumPlanner=api;
+ const api={isRequest,isScheduleFollowup,parse,validate,same};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.MomentumPlanner=api;
 })(globalThis);

@@ -58,3 +58,10 @@ Forms use novalidate and application errors. Required title, exact date/time, fu
 ## Verification
 
 Node tests: TZ=Europe/Paris node --test tests/*.test.cjs. Calendar-flow tests execute the actual application code with intercepted external URL dispatch, including one-confirmation, cancellation, duplicates and storage failure. They do not create real Calendar events. Browser checks cover narrow layout, draft editing, keyboard, native popup, cancel dialog, empty/error states and sibling screens. Physical iPhone GPU and keyboard behavior remain user-device checks.
+
+
+## Coach response contract — V0.11.2 en développement
+
+Le mode affiché distingue les conseils guidés de la conversation IA locale. Activation visible, téléchargement explicite d’environ 900 Mo ; erreur ou absence de GPU laisse le mode guidé utilisable. Les réponses citent les tâches/candidatures seulement si la demande les concerne. Une courte relance conserve le sujet précédent. Les limitations de capacité et les CV dépourvus de faits sont traités avant toute génération ou préparation Calendrier. Une intention personnelle sans commande de planification ne crée aucune fiche. Les balises internes de raisonnement ne sont jamais montrées, y compris pendant le streaming. Les cinq destinations et primitives visuelles existantes sont conservées.
+
+Les courts ajustements de rédaction peuvent hériter du sujet sur plusieurs tours (« moins formel », puis « non, je veux décliner »). Le texte de préparation reste visible tant que le flux ne contient pas de réponse affichable. Les candidats de remplacement non validés ne sont pas intégrés au produit.
