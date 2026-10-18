@@ -1,4 +1,4 @@
-# MOMENTUM v0.10 — PWA iPhone
+# MOMENTUM v0.12 — PWA iPhone
 
 Un accueil centré sur une prochaine étape, trois actions prioritaires, et un coach adapté aux tâches et candidatures existantes. Les cinq écrans, sauvegardes et la passerelle Calendrier restent disponibles. Les données conservent la clé `momentum.v1` et leurs identifiants.
 
@@ -33,7 +33,8 @@ La mise à jour remplace les fichiers PWA et renouvelle uniquement les anciens c
 ## Vérification
 
 ```sh
-TZ=Europe/Paris node --test tests/*.test.cjs
+pnpm install
+pnpm run check   # format, lint, tests
 python3 shortcuts/build_bridge.py
 python3 shortcuts/test_shortcut_structure.py
 ```
@@ -60,3 +61,12 @@ Validation V0.10 : 26 tests Node, dont exécution du code complet avec intercept
 Retrait de l’onglet Mail et de la configuration Microsoft à la demande de l’utilisateur. Navigation à cinq destinations, bibliothèque Microsoft, callback et modules Mail retirés. Les données momentum.v1, le Coach et le Bridge Calendrier sont conservés. Le runtime IA optionnel reste dans son Worker séparé et le cache applicatif garde sa liste explicite de ressources statiques.
 
 Le tableau de bord email et son agent quotidien restent indépendants dans leur discussion d’origine. MOMENTUM n’a plus de connexion à la messagerie.
+
+## V0.12.0 : fondations
+
+- Code reformaté (Prettier) et lisible ; styles extraits dans `styles.css`, données dans `store.js`.
+- Version unique dans `package.json` : `node scripts/set-version.mjs X.Y.Z` met à jour pages, service worker et cache ; un test vérifie la cohérence.
+- Les données portent un `schemaVersion` (clé `momentum.v1` inchangée). Des données illisibles sont conservées dans `momentum.v1.corrupt` au lieu d'être écrasées. L'app demande au navigateur de ne pas évacuer le stockage local.
+- Planificateur : « le 5 janvier » dit en décembre vise l'année suivante ; « demain 15h » fonctionne sans « à ».
+- Plus de gestionnaires `onclick` en ligne : un écouteur délégué, et une politique de sécurité du contenu (CSP) stricte pour les scripts.
+- Intégration continue : le workflow est fourni dans `docs/github-ci.yml` ; le copier vers `.github/workflows/ci.yml` (nécessite un jeton GitHub avec le scope `workflow`).
