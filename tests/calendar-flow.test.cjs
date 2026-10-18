@@ -4,7 +4,7 @@ const test = require('node:test'),
   fs = require('node:fs'),
   path = require('node:path'),
   vm = require('node:vm');
-function app({ failStorage = false } = {}) {
+function app({ failStorage = false, initial } = {}) {
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8'),
     nodes = new Map(),
     urls = [],
@@ -64,14 +64,16 @@ function app({ failStorage = false } = {}) {
             ? prompts
             : [],
   };
-  let data = JSON.stringify({
-    name: 'Test',
-    tone: 'balanced',
-    tasks: [],
-    jobs: [],
-    coachHistory: [],
-    coachLastDate: '2026-10-14',
-  });
+  let data = JSON.stringify(
+    initial || {
+      name: 'Test',
+      tone: 'balanced',
+      tasks: [],
+      jobs: [],
+      coachHistory: [],
+      coachLastDate: '2026-10-14',
+    }
+  );
   const NativeDate = Date;
   class FixedDate extends NativeDate {
     constructor(...args) {
@@ -116,7 +118,14 @@ function app({ failStorage = false } = {}) {
     console,
   };
   vm.createContext(sandbox);
-  for (const file of ['store.js', 'bridge.js', 'planner.js', 'coach.js', 'app.js'])
+  for (const file of [
+    'store.js',
+    'suggestions.js',
+    'bridge.js',
+    'planner.js',
+    'coach.js',
+    'app.js',
+  ])
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), sandbox, {
       filename: file,
     });
@@ -201,4 +210,50 @@ test('a negated follow-up cancels a pending proposal without Calendar dispatch',
   await a.nodes.get('draft-confirm').fire('click');
   assert.equal(a.urls.length, 0);
   assert.equal(a.stored().tasks.length, 0);
+});
+
+test('the home screen proposes a task from a due follow-up and adds it only on Ajouter', async () => {
+  const initial = {
+    name: 'Test',
+    tone: 'balanced',
+    tasks: [],
+    jobs: [{ id: 'j1', title: 'ACME', status: 'Envoyée', followup: '2026-10-13' }],
+    coachHistory: [],
+    coachLastDate: '2026-10-14',
+  };
+  const a = app({ initial });
+  const list = a.nodes.get('suggestion-list');
+  assert.equal(a.nodes.get('suggestions').hidden, false);
+  assert.ok(list.children.length >= 1);
+  assert.equal(a.stored().tasks.length, 0);
+  const card = list.children[0];
+  const actions = card.children.at(-1);
+  const labels = actions.children.map((b) => b.textContent);
+  assert.deepEqual(labels, ['Ajouter', 'Modifier', 'Plus tard']);
+  await actions.children[0].fire('click');
+  const tasks = a.stored().tasks;
+  assert.equal(tasks.length, 1);
+  assert.match(tasks[0].title, /ACME/);
+  assert.equal(tasks[0].due, '2026-10-14');
+  assert.equal(a.urls.length, 0, 'accepting an idea never opens Calendar');
+  assert.equal(
+    a.nodes.get('suggestion-list').children.some((c) => /ACME/.test(c.children[0]?.textContent)),
+    false
+  );
+});
+
+test('Plus tard hides an idea without creating a task, and a task can be added without a date', async () => {
+  const a = app({
+    initial: { tasks: [], jobs: [{ id: 'j1', title: 'ACME', status: 'À étudier' }] },
+  });
+  const first = a.nodes.get('suggestion-list').children[0];
+  await first.children.at(-1).children[2].fire('click');
+  assert.equal(a.stored().tasks.length, 0);
+  assert.equal(Object.keys(a.stored().suggestionLog).length, 1);
+  a.nodes.get('task-title').value = 'Ranger le garage';
+  await a.nodes.get('task-form').fire('submit');
+  const task = a.stored().tasks[0];
+  assert.equal(task.title, 'Ranger le garage');
+  assert.equal(task.due, '');
+  assert.equal(a.urls.length, 0);
 });

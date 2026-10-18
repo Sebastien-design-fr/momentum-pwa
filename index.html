@@ -19,8 +19,8 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <link rel="icon" href="./icons/icon-192.png" />
-    <title>Momentum — Ton élan quotidien · v0.13.0</title>
-    <link rel="stylesheet" href="./styles.css?v=0.13.0" />
+    <title>Momentum — Ton élan quotidien · v0.14.0</title>
+    <link rel="stylesheet" href="./styles.css?v=0.14.0" />
   </head>
   <body>
     <div class="app">
@@ -45,6 +45,10 @@
             <button class="btn ghost" id="home-coach">Parler au coach</button>
           </div>
         </div>
+        <section id="suggestions" class="suggestions" aria-labelledby="suggestions-title" hidden>
+          <h2 id="suggestions-title" class="section-title">Je te propose</h2>
+          <div id="suggestion-list"></div>
+        </section>
         <h2 class="section-title">Ton avancée</h2>
         <div class="stats">
           <div class="stat">
@@ -130,7 +134,7 @@
           <div class="field">
             <label for="weather-city">Ville pour la météo</label>
             <div class="form">
-              <input id="weather-city" value="Rozay-en-Brie" maxlength="100" />
+              <input id="weather-city" maxlength="100" placeholder="Ex. Lyon" />
               <button id="weather-check" type="button" class="btn secondary">Voir la météo</button>
             </div>
           </div>
@@ -350,11 +354,7 @@
         </div>
         <div class="card">
           <strong>Plan de recherche</strong>
-          <p class="muted small">
-            Critères de référence : CDI, 42–45 k€ minimum selon adéquation, 30–40 min maximum de
-            Rozay-en-Brie, sans découchés. Vérifie chaque annonce : MOMENTUM ne recherche pas encore
-            de nouvelles offres automatiquement.
-          </p>
+          <p class="muted small" id="search-plan"></p>
           <div class="actions">
             <button class="btn secondary" type="button" id="job-daily-action">
               Prochaine action emploi
@@ -375,7 +375,7 @@
       </section>
       <section id="settings" class="screen" hidden>
         <h1>Réglages</h1>
-        <p class="muted small">MOMENTUM v0.13.0</p>
+        <p class="muted small">MOMENTUM v0.14.0</p>
         <div class="card stack">
           <div class="field">
             <label for="profile-name">Comment t'appeler ?</label>
@@ -390,6 +390,40 @@
             </select>
           </div>
           <button class="btn" id="save-settings">Enregistrer</button>
+        </div>
+        <div class="card stack">
+          <strong>Mon profil de recherche</strong>
+          <p class="muted small">
+            Ces critères restent sur cet appareil. Ils servent au plan de recherche, à la météo et
+            aux idées du coach.
+          </p>
+          <div class="field">
+            <label for="search-city">Ville</label>
+            <input id="search-city" maxlength="100" placeholder="Ex. Lyon" autocomplete="off" />
+          </div>
+          <div class="draft-grid">
+            <div class="field">
+              <label for="search-salary">Salaire minimum (k€ par an)</label>
+              <input id="search-salary" type="number" inputmode="numeric" min="0" max="1000" />
+            </div>
+            <div class="field">
+              <label for="search-commute">Trajet maximum (minutes)</label>
+              <input id="search-commute" type="number" inputmode="numeric" min="0" max="300" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="search-contract">Type de contrat</label>
+            <select id="search-contract">
+              <option value="">Non précisé</option>
+              <option>CDI</option>
+              <option>CDD</option>
+              <option>Intérim</option>
+              <option>Freelance</option>
+              <option>Peu importe</option>
+            </select>
+          </div>
+          <button class="btn" id="save-profile" type="button">Enregistrer mon profil</button>
+          <p class="muted small" id="profile-status" aria-live="polite"></p>
         </div>
         <div class="card">
           <strong>Mes données</strong>
@@ -532,6 +566,84 @@
         </button>
       </div>
     </nav>
+    <div id="update-banner" class="app-feedback update-banner" hidden>
+      <p role="status">Une nouvelle version de Momentum est disponible.</p>
+      <button type="button" class="btn small" id="update-apply">Mettre à jour</button>
+    </div>
+    <dialog id="edit-dialog" class="app-dialog" aria-labelledby="edit-heading">
+      <form id="edit-form" novalidate class="stack">
+        <h2 id="edit-heading">Modifier</h2>
+        <div class="field">
+          <label for="edit-title">Titre</label>
+          <input id="edit-title" maxlength="150" autocomplete="off" />
+        </div>
+        <div id="edit-task-fields" class="stack">
+          <div class="field">
+            <label for="edit-category">Catégorie</label>
+            <select id="edit-category">
+              <option value="Emploi">Emploi</option>
+              <option value="Maison">Maison</option>
+              <option value="Bien-être">Bien-être</option>
+              <option value="Projet">Projet</option>
+            </select>
+          </div>
+          <div class="draft-grid">
+            <div class="field">
+              <label for="edit-date">Date (facultatif)</label>
+              <input id="edit-date" type="date" />
+            </div>
+            <div class="field">
+              <label for="edit-time">Heure</label>
+              <input id="edit-time" type="time" />
+            </div>
+            <div class="field">
+              <label for="edit-duration">Durée</label>
+              <select id="edit-duration">
+                <option value="30">30 minutes</option>
+                <option value="60">1 heure</option>
+                <option value="90">1 h 30</option>
+                <option value="120">2 heures</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="edit-alert">Alerte</label>
+              <select id="edit-alert">
+                <option value="0">Au début</option>
+                <option value="15">15 min avant</option>
+                <option value="30">30 min avant</option>
+                <option value="60">1 heure avant</option>
+                <option value="1440">1 jour avant</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="edit-job-fields" class="stack">
+          <div class="field">
+            <label for="edit-link">Lien de l'annonce (facultatif)</label>
+            <input id="edit-link" type="url" placeholder="https://…" />
+          </div>
+          <div class="field">
+            <label for="edit-status">Statut</label>
+            <select id="edit-status">
+              <option>À étudier</option>
+              <option>Candidature préparée</option>
+              <option>Envoyée</option>
+              <option>Entretien</option>
+              <option>Refusée</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="edit-followup">Date de relance (facultatif)</label>
+            <input id="edit-followup" type="date" />
+          </div>
+        </div>
+        <p id="edit-error" class="error form-error" role="status"></p>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="edit-cancel">Annuler</button>
+          <button type="submit" class="btn" id="edit-save">Enregistrer</button>
+        </div>
+      </form>
+    </dialog>
     <dialog
       id="confirm-dialog"
       class="app-dialog"
@@ -545,10 +657,11 @@
         <button type="button" class="btn destructive" id="dialog-accept">Supprimer</button>
       </div>
     </dialog>
-    <script src="./store.js?v=0.13.0" defer></script>
-    <script src="./planner.js?v=0.13.0" defer></script>
-    <script src="./coach.js?v=0.13.0" defer></script>
-    <script src="./bridge.js?v=0.13.0" defer></script>
-    <script src="./app.js?v=0.13.0" defer></script>
+    <script src="./store.js?v=0.14.0" defer></script>
+    <script src="./suggestions.js?v=0.14.0" defer></script>
+    <script src="./planner.js?v=0.14.0" defer></script>
+    <script src="./coach.js?v=0.14.0" defer></script>
+    <script src="./bridge.js?v=0.14.0" defer></script>
+    <script src="./app.js?v=0.14.0" defer></script>
   </body>
 </html>

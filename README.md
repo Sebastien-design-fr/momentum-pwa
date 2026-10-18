@@ -74,3 +74,11 @@ Le tableau de bord email et son agent quotidien restent indépendants dans leur 
 ## V0.13.0 : nouvelle identité visuelle
 
 Palette vert profond et souligné d'un seul accent jaune d'or (la prochaine étape, la progression, la fiche Calendrier), titres en serif système (New York sur iPhone, sans téléchargement), mode sombre automatique. Les couleurs sont des variables dans `styles.css`.
+
+## V0.14.0 : le coach propose des tâches
+
+- **Idées du coach** sur l'accueil (« Je te propose ») : relance de candidature échue, tâche en retard à reprogrammer, offre à étudier, idée de recherche d'emploi, action de départ si la liste est vide. Trois idées au plus, calculées localement (`suggestions.js`), sans IA ni réseau. Ajouter, Modifier ou Plus tard : rien n'est créé sans ton accord, et rien n'est envoyé à Calendrier.
+- **Mon profil de recherche** (Réglages) : ville, salaire minimum, trajet maximum, contrat. Aucune donnée personnelle n'est plus écrite dans le code.
+- **Tâches sans date** : le formulaire d'Actions crée directement la tâche. Le bouton ✎ modifie une tâche ou une offre (date, durée, alerte, lien, statut, relance).
+- **Mise à jour** : l'app cherche une nouvelle version à chaque retour au premier plan et affiche « Mettre à jour ».
+- Format de données `schemaVersion: 3` (`profile`, `suggestionLog`), migration automatique depuis la version 2.

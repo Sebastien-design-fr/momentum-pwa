@@ -972,3 +972,34 @@ textarea {
 .app-dialog {
   background: var(--surface);
 }
+
+.suggestions {
+  margin-top: 8px;
+}
+.suggestion {
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.suggestion .muted {
+  margin: 6px 0 0;
+}
+.suggestion .actions {
+  margin-top: 12px;
+}
+.icon-btn {
+  background: none;
+  border: 0;
+  color: var(--sub);
+  font-size: 20px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+.update-banner {
+  bottom: calc(env(safe-area-inset-bottom) + 160px);
+  border-left-color: var(--marigold);
+  background: var(--accent-soft);
+}
+#edit-form h2 {
+  margin: 0;
+}
