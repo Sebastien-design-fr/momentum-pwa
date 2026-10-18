@@ -12,6 +12,7 @@ export default [
         ...globals.browser,
         ...globals.serviceworker,
         MomentumStore: 'readonly',
+        MomentumSuggestions: 'readonly',
         MomentumPlanner: 'readonly',
         MomentumCoach: 'readonly',
         MomentumBridge: 'readonly',

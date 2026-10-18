@@ -118,3 +118,28 @@ test('storage persistence is requested only when supported', async () => {
     'denied'
   );
 });
+
+test('profile and suggestion log are validated and default to empty', () => {
+  const empty = store.sanitize({});
+  assert.deepEqual(empty.profile, { city: '', minSalary: 0, maxCommute: 0, contract: '' });
+  assert.deepEqual(empty.suggestionLog, {});
+  const state = store.sanitize({
+    profile: { city: '  Melun ', minSalary: '42', maxCommute: -3, contract: 'Autre' },
+    suggestionLog: {
+      ok: { status: 'later', date: '2026-10-14' },
+      badStatus: { status: 'x', date: '2026-10-14' },
+      badDate: { status: 'later', date: 'hier' },
+    },
+  });
+  assert.deepEqual(state.profile, { city: 'Melun', minSalary: 42, maxCommute: 0, contract: '' });
+  assert.deepEqual(Object.keys(state.suggestionLog), ['ok']);
+});
+
+test('data saved by schema 2 loads into schema 3 without losing anything', () => {
+  const v2 = { schemaVersion: 2, name: 'Alex', tasks: [{ id: 'a', title: 'Garage' }], jobs: [] };
+  const state = store.load({ getItem: () => JSON.stringify(v2) }).state;
+  assert.equal(state.schemaVersion, 3);
+  assert.equal(state.name, 'Alex');
+  assert.equal(state.tasks[0].id, 'a');
+  assert.deepEqual(state.suggestionLog, {});
+});

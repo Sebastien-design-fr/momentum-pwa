@@ -3,8 +3,8 @@
 (function (root) {
   const KEY = 'momentum.v1';
   const CORRUPT_KEY = KEY + '.corrupt';
-  // 1: V0.1–V0.11 (no explicit version). 2: adds `schemaVersion` at the root.
-  const SCHEMA_VERSION = 2;
+  // 1: V0.1–V0.11 (no explicit version). 2: adds `schemaVersion`. 3: adds `profile` and `suggestionLog`.
+  const SCHEMA_VERSION = 3;
   const CATEGORIES = ['Emploi', 'Maison', 'Bien-être', 'Projet'];
   const JOB_STATUSES = ['À étudier', 'Candidature préparée', 'Envoyée', 'Entretien', 'Refusée'];
   const TONES = ['balanced', 'gentle', 'firm'];
@@ -67,6 +67,35 @@
     };
   }
 
+  const SUGGESTION_STATUSES = ['accepted', 'later', 'dismissed'];
+  const CONTRACTS = ['', 'CDI', 'CDD', 'Intérim', 'Freelance', 'Peu importe'];
+
+  function sanitizeProfile(p) {
+    const x = p && typeof p === 'object' ? p : {};
+    const number = (value, max) => {
+      const n = Math.round(Number(value));
+      return Number.isFinite(n) && n > 0 ? Math.min(n, max) : 0;
+    };
+    return {
+      city: String(x.city || '')
+        .trim()
+        .slice(0, 100),
+      minSalary: number(x.minSalary, 1000),
+      maxCommute: number(x.maxCommute, 300),
+      contract: CONTRACTS.includes(x.contract) ? x.contract : '',
+    };
+  }
+
+  function sanitizeSuggestionLog(log) {
+    const out = {};
+    if (!log || typeof log !== 'object' || Array.isArray(log)) return out;
+    for (const [key, entry] of Object.entries(log).slice(-200)) {
+      if (entry && SUGGESTION_STATUSES.includes(entry.status) && DAY.test(entry.date || ''))
+        out[key.slice(0, 120)] = { status: entry.status, date: entry.date };
+    }
+    return out;
+  }
+
   // Accepts any stored or imported version and returns the current schema.
   function sanitize(x, newId = defaultId) {
     if (!x || typeof x !== 'object' || Array.isArray(x)) throw Error('Format invalide');
@@ -87,6 +116,8 @@
         .filter((m) => m && ['moi', 'coach'].includes(m.role))
         .map((m) => ({ role: m.role, text: String(m.text || '').slice(0, 1200) })),
       coachLastDate: typeof x.coachLastDate === 'string' ? x.coachLastDate.slice(0, 10) : '',
+      profile: sanitizeProfile(x.profile),
+      suggestionLog: sanitizeSuggestionLog(x.suggestionLog),
     };
   }
 
@@ -136,6 +167,7 @@
     CORRUPT_KEY,
     SCHEMA_VERSION,
     CATEGORIES,
+    CONTRACTS,
     JOB_STATUSES,
     DURATIONS,
     ALERTS,

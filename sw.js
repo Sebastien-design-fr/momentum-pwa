@@ -1,14 +1,15 @@
-const CACHE = 'momentum-v0.13.0-core-1';
+const CACHE = 'momentum-v0.14.0-core-1';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=0.13.0',
-  './store.js?v=0.13.0',
-  './app.js?v=0.13.0',
-  './bridge.js?v=0.13.0',
-  './coach.js?v=0.13.0',
-  './planner.js?v=0.13.0',
-  './ai-runtime.js?v=0.13.0',
+  './styles.css?v=0.14.0',
+  './store.js?v=0.14.0',
+  './suggestions.js?v=0.14.0',
+  './app.js?v=0.14.0',
+  './bridge.js?v=0.14.0',
+  './coach.js?v=0.14.0',
+  './planner.js?v=0.14.0',
+  './ai-runtime.js?v=0.14.0',
   './ai-worker.js',
   './manifest.webmanifest',
   './icons/icon-192.png',

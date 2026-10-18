@@ -77,7 +77,7 @@ function navigate(id) {
       coach: 'Coach',
       jobs: 'Emploi',
       settings: 'Réglages',
-    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.13.0';
+    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.14.0';
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
@@ -146,6 +146,13 @@ function makeTask(t, compact = false) {
   }
   row.append(wrapper);
   if (compact) return row;
+  const edit = document.createElement('button');
+  edit.type = 'button';
+  edit.className = 'icon-btn';
+  edit.textContent = '✎';
+  edit.setAttribute('aria-label', 'Modifier ' + t.title);
+  edit.addEventListener('click', () => openEdit('task', t));
+  row.append(edit);
   const del = document.createElement('button');
   del.type = 'button';
   del.className = 'danger';
@@ -174,6 +181,7 @@ function render() {
   $('count-done').textContent = `${done}/${total}`;
   $('count-jobs').textContent = state.jobs.length;
   renderUpcoming();
+  renderSuggestions();
   showImpulse();
   const pct = total ? Math.round((done / total) * 100) : 0;
   $('pct').textContent = pct + ' %';
@@ -241,6 +249,13 @@ function render() {
       render();
     });
     actions.append(follow);
+    const editJob = document.createElement('button');
+    editJob.type = 'button';
+    editJob.className = 'btn small ghost';
+    editJob.textContent = 'Modifier';
+    editJob.setAttribute('aria-label', 'Modifier ' + j.title);
+    editJob.addEventListener('click', () => openEdit('job', j));
+    actions.append(editJob);
     const remove = document.createElement('button');
     remove.className = 'btn small ghost';
     remove.textContent = 'Supprimer';
@@ -270,12 +285,17 @@ $('task-form').addEventListener('submit', (e) => {
     return;
   }
   fieldError('task-title', 'task-form-error', '');
-  showCandidate(
-    { title, day: '', clock: '14:00', category: $('task-category').value },
-    'Choisis la date et valide pour demander l’ajout dans Apple Calendrier.'
-  );
+  const task = sanitize({
+    tasks: [{ id: crypto.randomUUID(), title, category: $('task-category').value }],
+  }).tasks[0];
+  state.tasks.unshift(task);
+  if (!save()) {
+    state.tasks.shift();
+    return;
+  }
   $('task-title').value = '';
-  $('smart-preview').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  render();
+  feedback('Action ajoutée. Touche ✎ pour choisir une date et l’envoyer à Calendrier.');
 });
 $('job-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -493,7 +513,7 @@ let coachBusy = false,
   coachDraft = null;
 const localAI = MomentumCoach.createClient({
   gpu: navigator.gpu,
-  loadRuntime: () => import('./ai-runtime.js?v=0.13.0'),
+  loadRuntime: () => import('./ai-runtime.js?v=0.14.0'),
   onProgress: (p) => {
     $('coach-ai-status').textContent =
       'Préparation de la conversation IA : ' +
@@ -772,10 +792,26 @@ if (loaded.recovered)
 MomentumStore.requestPersistence(navigator.storage);
 renderCoach();
 render();
+// A new service worker takes over on its own; the banner offers the reload that shows the new code.
+function watchForUpdates() {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController) $('update-banner').hidden = false;
+  });
+  navigator.serviceWorker
+    .register('./sw.js')
+    .then((registration) => {
+      const check = () => registration.update().catch(() => {});
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') check();
+      });
+      check();
+    })
+    .catch(() => {});
+}
 if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
-  window.addEventListener('load', () =>
-    navigator.serviceWorker.register('./sw.js').catch(() => {})
-  );
+  window.addEventListener('load', watchForUpdates);
+onAction('update-apply', () => location.reload());
 
 // Planification V0.3. Dates interprétées en heure locale de l'iPhone.
 let planCandidate = null;
@@ -869,7 +905,7 @@ $('smart-form').addEventListener('submit', async (e) => {
   if (c.weather) {
     $('weather-report').textContent = 'Consultation de la météo…';
     try {
-      const data = await loadWeather($('weather-city').value.trim() || 'Rozay-en-Brie');
+      const data = await loadWeather(weatherCity());
       const best = forecastStatus(data.hourly);
       if (best && !c.day) {
         c.day = best.date;
@@ -898,7 +934,7 @@ onAction('weather-check', async () => {
   const node = $('weather-report');
   node.textContent = 'Consultation de la météo…';
   try {
-    const d = await loadWeather($('weather-city').value.trim() || 'Rozay-en-Brie');
+    const d = await loadWeather(weatherCity());
     const best = forecastStatus(d.hourly);
     node.textContent =
       d.location.name +
@@ -986,6 +1022,195 @@ function launchAppleBridge(task) {
     return false;
   }
 }
+
+// Weather city: the field wins, then the saved profile. No personal default is shipped.
+function weatherCity() {
+  const city = $('weather-city').value.trim() || state.profile.city;
+  if (!city) throw Error('Indique ta ville ou enregistre-la dans ton profil.');
+  return city;
+}
+
+// Search profile and plan.
+function renderSearchPlan() {
+  const p = state.profile;
+  const parts = [];
+  if (p.contract) parts.push(p.contract);
+  if (p.minSalary) parts.push(p.minSalary + ' k€ minimum');
+  if (p.maxCommute)
+    parts.push(p.maxCommute + ' min de trajet maximum' + (p.city ? ' depuis ' + p.city : ''));
+  else if (p.city) parts.push('autour de ' + p.city);
+  $('search-plan').textContent = parts.length
+    ? 'Tes critères : ' +
+      parts.join(', ') +
+      '. Vérifie chaque annonce : MOMENTUM ne recherche pas d’offres automatiquement.'
+    : 'Ajoute tes critères (ville, salaire, trajet, contrat) dans Réglages pour guider ta recherche. MOMENTUM ne recherche pas d’offres automatiquement.';
+  if (!$('weather-city').value) $('weather-city').value = p.city;
+}
+function fillProfileFields() {
+  const p = state.profile;
+  $('search-city').value = p.city;
+  $('search-salary').value = p.minSalary || '';
+  $('search-commute').value = p.maxCommute || '';
+  $('search-contract').value = p.contract;
+}
+onAction('save-profile', () => {
+  state.profile = sanitize({
+    profile: {
+      city: $('search-city').value,
+      minSalary: $('search-salary').value,
+      maxCommute: $('search-commute').value,
+      contract: $('search-contract').value,
+    },
+  }).profile;
+  if (!save()) return;
+  fillProfileFields();
+  $('weather-city').value = state.profile.city;
+  renderSearchPlan();
+  render();
+  $('profile-status').textContent = 'Profil enregistré sur cet appareil.';
+});
+
+// Edit dialog shared by tasks, jobs and accepted coach ideas.
+let editing = null;
+const editDialog = $('edit-dialog');
+function openEdit(kind, item, options = {}) {
+  editing = { kind, item, ...options };
+  const isTask = kind === 'task';
+  $('edit-heading').textContent = options.isNew
+    ? 'Ajouter cette action'
+    : isTask
+      ? 'Modifier l’action'
+      : 'Modifier l’offre';
+  $('edit-title').value = item.title;
+  $('edit-task-fields').hidden = !isTask;
+  $('edit-job-fields').hidden = isTask;
+  if (isTask) {
+    $('edit-category').value = item.category;
+    $('edit-date').value = item.due || '';
+    $('edit-time').value = item.time || '14:00';
+    $('edit-duration').value = String(item.duration || 60);
+    $('edit-alert').value = String(item.alert ?? 30);
+  } else {
+    $('edit-link').value = item.link || '';
+    $('edit-status').value = item.status;
+    $('edit-followup').value = item.followup || '';
+  }
+  $('edit-error').textContent = '';
+  editDialog.showModal();
+  document.body.classList.add('dialog-open');
+  $('edit-title').focus();
+}
+function closeEdit() {
+  if (editDialog.open) editDialog.close();
+  document.body.classList.remove('dialog-open');
+  editing = null;
+}
+onAction('edit-cancel', closeEdit);
+editDialog.addEventListener('cancel', (e) => {
+  e.preventDefault();
+  closeEdit();
+});
+$('edit-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (!editing) return;
+  const { kind, item } = editing;
+  const title = $('edit-title').value.trim();
+  const fail = (message, id) => {
+    $('edit-error').textContent = message;
+    $(id).setAttribute('aria-invalid', 'true');
+    $(id).focus();
+  };
+  if (!title) return fail('Indique un titre.', 'edit-title');
+  if (kind === 'task') {
+    const due = $('edit-date').value,
+      time = $('edit-time').value;
+    if (due && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time))
+      return fail('Choisis une heure valide.', 'edit-time');
+    const next = {
+      title,
+      category: $('edit-category').value,
+      due,
+      time: time || '14:00',
+      duration: Number($('edit-duration').value),
+      alert: Number($('edit-alert').value),
+    };
+    const slotChanged = next.due !== (item.due || '') || next.time !== item.time;
+    Object.assign(item, next, slotChanged ? { bridgeLaunched: false } : {});
+    if (editing.isNew) state.tasks.unshift(item);
+  } else {
+    const link = $('edit-link').value.trim();
+    if (link && !/^https?:\/\//i.test(link))
+      return fail('Utilise un lien commençant par https://', 'edit-link');
+    Object.assign(item, {
+      title,
+      link,
+      status: $('edit-status').value,
+      followup: $('edit-followup').value,
+    });
+  }
+  if (editing.suggestionKey) MomentumSuggestions.record(state, editing.suggestionKey, 'accepted');
+  if (!save()) return;
+  closeEdit();
+  render();
+});
+
+// Coach ideas on the home screen: nothing is added until the user accepts.
+function renderSuggestions() {
+  const list = MomentumSuggestions.suggest(state);
+  $('suggestions').hidden = !list.length;
+  const node = $('suggestion-list');
+  node.replaceChildren();
+  for (const s of list) {
+    const card = document.createElement('div');
+    card.className = 'suggestion';
+    addText(card, 'strong', s.title);
+    addText(card, 'p', s.reason, 'muted small');
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = (label, cls, handler) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn small ' + cls;
+      b.textContent = label;
+      b.addEventListener('click', handler);
+      actions.append(b);
+    };
+    button('Ajouter', '', () => acceptSuggestion(s));
+    button('Modifier', 'secondary', () => editSuggestion(s));
+    button('Plus tard', 'ghost', () => {
+      MomentumSuggestions.record(state, s.key, 'later');
+      if (save()) render();
+    });
+    card.append(actions);
+    node.append(card);
+  }
+}
+function suggestionTask(s) {
+  return sanitize({
+    tasks: [{ id: crypto.randomUUID(), title: s.title, category: s.category, due: s.due }],
+  }).tasks[0];
+}
+function acceptSuggestion(s) {
+  if (s.kind === 'reschedule') {
+    const t = state.tasks.find((x) => x.id === s.taskId);
+    if (t) Object.assign(t, { due: s.due, bridgeLaunched: false });
+  } else state.tasks.unshift(suggestionTask(s));
+  MomentumSuggestions.record(state, s.key, 'accepted');
+  if (save()) {
+    render();
+    feedback('Action ajoutée à ta liste.');
+  }
+}
+function editSuggestion(s) {
+  if (s.kind === 'reschedule') {
+    const t = state.tasks.find((x) => x.id === s.taskId);
+    if (t) openEdit('task', t, { suggestionKey: s.key });
+    return;
+  }
+  openEdit('task', suggestionTask(s), { isNew: true, suggestionKey: s.key });
+}
+fillProfileFields();
+renderSearchPlan();
 onAction('open-shortcuts', () => {
   location.assign('shortcuts://');
 });
