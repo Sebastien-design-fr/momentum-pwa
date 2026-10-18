@@ -77,7 +77,7 @@ function navigate(id) {
       coach: 'Coach',
       jobs: 'Emploi',
       settings: 'Réglages',
-    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.12.0';
+    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.13.0';
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
@@ -493,7 +493,7 @@ let coachBusy = false,
   coachDraft = null;
 const localAI = MomentumCoach.createClient({
   gpu: navigator.gpu,
-  loadRuntime: () => import('./ai-runtime.js?v=0.12.0'),
+  loadRuntime: () => import('./ai-runtime.js?v=0.13.0'),
   onProgress: (p) => {
     $('coach-ai-status').textContent =
       'Préparation de la conversation IA : ' +

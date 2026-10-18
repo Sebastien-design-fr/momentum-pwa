@@ -1,16 +1,61 @@
 :root {
+  /* Calm forest palette: one deep green for action, one marigold for "what to do next". */
+  --paper: #f4f6f1;
+  --surface: #ffffff;
+  --ink: #12251f;
+  --sub: #51635c;
+  --sub-strong: #3c4f48;
+  --muted: #8a9a92;
+  --line: #d9e0d8;
+  --line-strong: #bccabf;
+  --soft: #e7ede6;
+  --brand: #0f5a4d;
+  --brand-deep: #0b4339;
+  --brand-soft: #dcebe3;
+  --on-brand: #ffffff;
+  --ok: #2f7a55;
+  --ok-soft: #e1eee3;
+  --accent: #c98a12;
+  --accent-soft: #fbf1dc;
+  --accent-line: #ecd7a6;
+  --marigold: #f0b33c;
+  --on-marigold: #2a1d00;
+  --danger: #a3361f;
+  --scroll-thumb: var(--muted);
+  --scroll-track: var(--soft);
+  --scroll-hover: var(--sub);
+  --scroll-active: var(--brand);
+  --serif: ui-serif, 'New York', 'Iowan Old Style', Georgia, serif;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #13222b;
-  background: #f3f7f8;
-  color-scheme: light;
-  --ink: #13222b;
-  --paper: #f3f7f8;
-  --blue: #2767a8;
-  --copper: #a85032;
-  --jade: #39796c;
-  --sub: #566b78;
-  --line: #d7e1e7;
-  --mint: #2767a8;
+  color: var(--ink);
+  background: var(--paper);
+  color-scheme: light dark;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+  scrollbar-width: auto;
+  scrollbar-gutter: stable;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0d1612;
+    --surface: #15221c;
+    --ink: #e7efe9;
+    --sub: #a3b4ab;
+    --sub-strong: #c0cec6;
+    --muted: #6f8379;
+    --line: #243730;
+    --line-strong: #35493f;
+    --soft: #1b2a23;
+    --brand: #64cfae;
+    --brand-deep: #8fe0c6;
+    --brand-soft: #1b3329;
+    --on-brand: #06201a;
+    --ok: #6cc796;
+    --ok-soft: #173025;
+    --accent: #f0b33c;
+    --accent-soft: #2a2412;
+    --accent-line: #5a4a1c;
+    --danger: #ff9b84;
+  }
 }
 * {
   box-sizing: border-box;
@@ -42,7 +87,7 @@ select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible,
 a:focus-visible {
-  outline: 3px solid var(--blue);
+  outline: 3px solid var(--brand);
   outline-offset: 3px;
 }
 [hidden] {
@@ -122,7 +167,7 @@ h1 + .muted {
 }
 .hero {
   padding: 24px;
-  background: #e4edf6;
+  background: var(--brand-soft);
   border: 0;
   border-radius: 20px;
   margin-top: 0;
@@ -186,7 +231,7 @@ h1 + .muted {
 }
 .progress > div {
   height: 100%;
-  background: var(--jade);
+  background: var(--ok);
 }
 .btn {
   display: inline-flex;
@@ -196,8 +241,8 @@ h1 + .muted {
   min-height: 48px;
   padding: 12px 16px;
   border-radius: 10px;
-  background: var(--blue);
-  color: white;
+  background: var(--brand);
+  color: var(--on-brand);
   font-weight: 700;
   text-decoration: none;
   line-height: 1.4;
@@ -207,13 +252,13 @@ h1 + .muted {
   filter: brightness(0.94);
 }
 .btn.secondary {
-  background: #e2eaf0;
-  color: #234f76;
+  background: var(--soft);
+  color: var(--brand-deep);
 }
 .btn.ghost {
   background: transparent;
-  color: var(--blue);
-  border-color: #b9cedf;
+  color: var(--brand);
+  border-color: var(--line-strong);
 }
 .btn.small {
   font-size: 13px;
@@ -221,8 +266,8 @@ h1 + .muted {
   min-height: 44px;
 }
 .btn:disabled {
-  background: #dce5eb;
-  color: #6a7e8c;
+  background: var(--soft);
+  color: var(--muted);
   cursor: default;
   border-color: transparent;
 }
@@ -234,8 +279,8 @@ h1 + .muted {
 }
 .app-feedback {
   padding: 12px 14px;
-  background: #e4eee9;
-  border-left: 3px solid var(--jade);
+  background: var(--ok-soft);
+  border-left: 3px solid var(--ok);
   font-size: 13px;
   line-height: 1.5;
   margin-top: 18px;
@@ -262,7 +307,7 @@ h1 + .muted {
 .task input {
   width: 24px;
   height: 24px;
-  accent-color: var(--jade);
+  accent-color: var(--ok);
   margin: 0;
 }
 .task .text {
@@ -284,7 +329,7 @@ h1 + .muted {
 }
 .done {
   text-decoration: line-through;
-  color: var(--jade);
+  color: var(--ok);
 }
 .tag {
   display: inline-block;
@@ -293,13 +338,13 @@ h1 + .muted {
   padding: 4px 7px;
   margin-top: 6px;
   border-radius: 5px;
-  background: #e7eef3;
-  color: #435866;
+  background: var(--soft);
+  color: var(--sub-strong);
 }
 .danger {
   background: none;
   border: 0;
-  color: #934738;
+  color: var(--danger);
   font-size: 22px;
   min-height: 44px;
   min-width: 44px;
@@ -322,7 +367,7 @@ h1 + .muted {
 .field label {
   font-size: 13px;
   font-weight: 650;
-  color: #435866;
+  color: var(--sub-strong);
 }
 .field input,
 .field select,
@@ -333,8 +378,8 @@ h1 + .muted {
 textarea {
   min-width: 0;
   width: 100%;
-  background: #fff;
-  border: 1px solid #bdcdd7;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   padding: 12px;
   font-size: 16px;
@@ -371,8 +416,8 @@ textarea {
 .job select,
 .job input {
   color: var(--ink);
-  background: #fff;
-  border: 1px solid #bdcdd7;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   padding: 8px;
   font-size: 16px;
@@ -395,26 +440,26 @@ textarea {
   margin: 7px 0;
 }
 #planner {
-  background: #fbf4ee;
+  background: var(--accent-soft);
   border: 0;
-  border-left: 3px solid var(--copper);
+  border-left: 3px solid var(--accent);
   border-radius: 12px;
   padding: 20px;
 }
 #smart-preview {
-  border-top: 1px solid #dfc8b9;
+  border-top: 1px solid var(--accent-line);
   padding-top: 18px;
 }
 #home-upcoming {
   line-height: 1.8;
 }
 .notice {
-  border-left: 3px solid #839fb2;
+  border-left: 3px solid var(--muted);
   border-radius: 0;
-  background: #e8eff3;
+  background: var(--soft);
   padding: 12px 14px;
   font-size: 13px;
-  color: #435866;
+  color: var(--sub-strong);
   line-height: 1.6;
 }
 details summary {
@@ -430,8 +475,8 @@ details a.btn {
   padding: 0;
 }
 .bubble {
-  border-left: 3px solid var(--blue);
-  background: white;
+  border-left: 3px solid var(--brand);
+  background: var(--surface);
   padding: 18px 20px;
   white-space: pre-line;
   overflow-wrap: anywhere;
@@ -453,8 +498,8 @@ details a.btn {
   padding: 12px 14px;
 }
 .coach-situations .btn {
-  background: #e5ecf1;
-  color: #3a556a;
+  background: var(--soft);
+  color: var(--sub-strong);
   font-weight: 600;
 }
 .coach-history {
@@ -482,11 +527,11 @@ details a.btn {
   overflow-wrap: anywhere;
 }
 .coach-line.mine {
-  background: #e0eaf4;
+  background: var(--brand-soft);
   margin-left: 24px;
 }
 .coach-line.bot {
-  background: white;
+  background: var(--surface);
   margin-right: 18px;
 }
 .coach-line small {
@@ -516,16 +561,16 @@ details a.btn {
   margin-bottom: 0;
 }
 .coach-ai-settings .tag {
-  background: #e6ebef;
-  color: #536873;
+  background: var(--soft);
+  color: var(--sub);
   margin-left: 4px;
 }
 .calendar-draft {
   margin-top: 22px;
   padding: 20px;
-  background: #fff;
-  border: 1px solid #dfc5b7;
-  border-left: 4px solid var(--copper);
+  background: var(--surface);
+  border: 1px solid var(--accent-line);
+  border-left: 4px solid var(--accent);
   border-radius: 12px;
   display: grid;
   gap: 16px;
@@ -540,7 +585,7 @@ details a.btn {
   height: 26px;
   flex: none;
   fill: none;
-  stroke: var(--copper);
+  stroke: var(--accent);
   stroke-width: 1.6;
   margin-top: 3px;
 }
@@ -570,7 +615,7 @@ details a.btn {
   margin: 0;
 }
 .error {
-  color: #a13e28 !important;
+  color: var(--danger) !important;
   font-weight: 600;
 }
 .nav {
@@ -579,7 +624,7 @@ details a.btn {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #f7fafbf2;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
   border-top: 1px solid var(--line);
   backdrop-filter: blur(18px);
   padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
@@ -595,7 +640,7 @@ details a.btn {
   background: none;
   border: 0;
   border-radius: 10px;
-  color: #647786;
+  color: var(--sub);
   padding: 8px 1px;
   font-size: 11px;
   min-height: 58px;
@@ -616,8 +661,8 @@ details a.btn {
   stroke-linejoin: round;
 }
 .nav button.active {
-  color: var(--blue);
-  background: #e0eaf4;
+  color: var(--brand);
+  background: var(--brand-soft);
   font-weight: 650;
 }
 @media (max-width: 390px) {
@@ -678,15 +723,6 @@ details a.btn {
 }
 
 /* Shared behavior states and globally inherited scrollbars. */
-:root {
-  --scroll-thumb: #839fb2;
-  --scroll-track: #e8eff3;
-  --scroll-hover: #566b78;
-  --scroll-active: #2767a8;
-  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
-  scrollbar-width: auto;
-  scrollbar-gutter: stable;
-}
 * {
   scrollbar-color: var(--scroll-thumb) var(--scroll-track);
   scrollbar-width: auto;
@@ -721,7 +757,7 @@ details a.btn {
   left: 50%;
   transform: translateX(-50%);
   width: min(620px, calc(100% - 32px));
-  box-shadow: 0 4px 20px #13222b20;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--ink) 13%, transparent);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -747,21 +783,21 @@ details a.btn {
   border-radius: 16px;
   padding: 24px;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface);
   overflow: auto;
 }
 .app-dialog h2 {
   margin-top: 0;
 }
 .app-dialog::backdrop {
-  background: #13222b66;
+  background: color-mix(in srgb, var(--ink) 40%, transparent);
 }
 .dialog-open {
   overflow: hidden;
 }
 .btn.destructive {
-  background: #a13e28;
-  color: white;
+  background: var(--danger);
+  color: var(--on-brand);
 }
 .calendar-draft {
   scroll-margin-top: 16px;
@@ -784,11 +820,11 @@ textarea {
   }
   .danger:hover,
   .app-feedback button:hover {
-    background: #e7eef3;
+    background: var(--soft);
     border-radius: 8px;
   }
   summary:hover {
-    color: var(--blue);
+    color: var(--brand);
   }
 }
 @media (forced-colors: active) {
@@ -815,4 +851,124 @@ textarea {
   .draft-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* v0.13 visual identity: serif voice, deep-green "next step" panel, marigold as the only warm accent. */
+:root {
+  --hero-bg: #0f4a3f;
+  --hero-ink: #f1f6f2;
+  --hero-sub: #bcd6ca;
+  --hero-line: #ffffff2e;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hero-bg: #133a2f;
+  }
+}
+h1,
+h2,
+.stat strong {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+h1 {
+  font-size: 34px;
+  line-height: 1.08;
+}
+h1 + .muted {
+  font-size: 16px;
+}
+.brand {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--brand);
+}
+.hero {
+  background: var(--hero-bg);
+  color: var(--hero-ink);
+  padding: 28px 24px;
+  border-radius: 24px;
+}
+.hero .eyebrow {
+  color: var(--hero-sub);
+}
+.hero h2 {
+  color: var(--hero-ink);
+  font-size: 28px;
+  line-height: 1.15;
+  margin: 12px 0 12px;
+}
+.hero p {
+  color: var(--hero-sub);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.hero .btn:first-child {
+  background: var(--marigold);
+  color: var(--on-marigold);
+  min-height: 52px;
+  font-size: 16px;
+}
+.hero .btn.secondary,
+.hero .btn.ghost {
+  background: transparent;
+  color: var(--hero-ink);
+  border-color: var(--hero-line);
+}
+.hero .btn:focus-visible {
+  outline-color: var(--marigold);
+}
+.stat strong {
+  font-size: 30px;
+  font-weight: 600;
+}
+.progress {
+  height: 6px;
+}
+.progress > div {
+  background: var(--marigold);
+  border-radius: 6px;
+}
+.card {
+  border-top-color: var(--line);
+}
+.btn {
+  border-radius: 14px;
+}
+.field input,
+.field select,
+.form input,
+.form select,
+.form textarea,
+.coach-entry input,
+textarea {
+  border-radius: 12px;
+}
+.nav button.active {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+#planner {
+  border-left-color: var(--marigold);
+}
+.calendar-draft {
+  border-left-color: var(--marigold);
+}
+.tag {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+.bubble {
+  border-left-color: var(--marigold);
+  font-family: var(--serif);
+  font-size: 17px;
+}
+.coach-line.mine {
+  background: var(--brand-soft);
+}
+.app-dialog {
+  background: var(--surface);
 }
