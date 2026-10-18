@@ -1,4 +1,4 @@
-# MOMENTUM v0.12 — PWA iPhone
+# MOMENTUM v0.13 — PWA iPhone
 
 Un accueil centré sur une prochaine étape, trois actions prioritaires, et un coach adapté aux tâches et candidatures existantes. Les cinq écrans, sauvegardes et la passerelle Calendrier restent disponibles. Les données conservent la clé `momentum.v1` et leurs identifiants.
 
@@ -70,3 +70,7 @@ Le tableau de bord email et son agent quotidien restent indépendants dans leur 
 - Planificateur : « le 5 janvier » dit en décembre vise l'année suivante ; « demain 15h » fonctionne sans « à ».
 - Plus de gestionnaires `onclick` en ligne : un écouteur délégué, et une politique de sécurité du contenu (CSP) stricte pour les scripts.
 - Intégration continue : le workflow est fourni dans `docs/github-ci.yml` ; le copier vers `.github/workflows/ci.yml` (nécessite un jeton GitHub avec le scope `workflow`).
+
+## V0.13.0 : nouvelle identité visuelle
+
+Palette vert profond et souligné d'un seul accent jaune d'or (la prochaine étape, la progression, la fiche Calendrier), titres en serif système (New York sur iPhone, sans téléchargement), mode sombre automatique. Les couleurs sont des variables dans `styles.css`.
