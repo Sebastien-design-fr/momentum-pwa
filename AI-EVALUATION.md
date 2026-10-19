@@ -88,3 +88,14 @@ Validation finale : 55 tests automatisés passent, audit UI strict sans anomalie
 Le dépôt main a évolué en parallèle vers V0.14.0 : code formaté, store schemaVersion 3, thème forêt/sombre, suggestions et édition. Ces fonctions sont conservées ; la conversation anonyme est intégrée sur cette base en V0.15.0. `pnpm run check` passe : format, lint et 75 tests. La CSP n’ajoute que text.pollinations.ai aux destinations réseau d’inférence. Un onzième essai fictif dans cette interface produit trois phrases cohérentes sur la reprise de la lecture ; le conseil de 15 minutes reste assez exigeant pour une demande très simple. Les réserves de qualité du CV restent valables. Aucun test physique iPhone.
 
 L’audit statique strict sur la fusion signale 37 boutons sans action : il ne reconnaît pas le gestionnaire délégué document.addEventListener introduit en V0.12. Les boutons du Coach sont branchés via onAction/actionsById ; activation, envoi et réponse ont été vérifiés dans le navigateur. Ce rapport statique ne doit donc pas être présenté comme vierge, ni ses alertes confondues avec des erreurs d’exécution.
+
+
+## V0.16 — planning structuré, 19 octobre 2026
+
+Deux appels réels supplémentaires dans le navigateur local, avec données fictives. Demande : Lecture demain 10 h, 30 minutes, alerte au début ; Marche demain 15 h, 60 minutes, alerte 15 minutes avant. La réponse a fourni deux fiches pour le 20 octobre, avec titre, date, durée et alerte exacts, sans afficher le JSON. Relance : décaler seulement Lecture à 11 h ; la seconde génération a conservé Marche et les alertes. Aucun événement Apple créé pendant ces essais.
+
+Les tests d’intégration exécutent le code de l’application avec interception du lancement Apple : zéro tâche avant validation, un lancement et une tâche par clic, alerte 0, aucune répétition du même envoi, modification, stockage indisponible et reprise du planning après rechargement. Le fichier signé Bridge est inchangé. Les données schemaVersion 3 sont conservées en version 4 avec le planning en attente.
+
+Dans le navigateur : reprise après rechargement, activation désactivée par défaut, formulaire Modifier prérempli, ouverture du choix d’alerte puis annulation sans écriture, largeur 440 px sans débordement horizontal. Ce test responsive sur Mac ne remplace pas un essai physique iPhone du lancement Calendrier. La qualité et le respect du format restent variables : un bloc absent ou invalide n’est jamais converti en événement, et les champs manquants doivent être précisés.
+
+Validation V0.16 : 82 tests, ESLint et formatage passent. L’audit statique signale uniquement 38 boutons sans action : les 37 alertes déjà documentées sur la délégation de main et le nouveau bouton Fermer branché via onAction. Aucun changement au modèle de délégation. Les contrôles de planning ajoutés dynamiquement ont leurs gestionnaires directs, exercés par les tests d’intégration et le navigateur.

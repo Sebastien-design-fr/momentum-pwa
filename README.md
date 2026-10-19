@@ -1,4 +1,4 @@
-# MOMENTUM V0.15 — IA en ligne sans inscription
+# MOMENTUM V0.16 — IA en ligne sans inscription
 
 PWA personnelle pour iPhone. Les cinq écrans, la palette, les données `momentum.v1` et le raccourci MOMENTUM Bridge sont conservés. Intégration sur `dev/coach-relevance-v0112`, à partir de la V0.14.0.
 
@@ -64,3 +64,12 @@ Palette vert profond et souligné d'un seul accent jaune d'or (la prochaine éta
 - Format de données `schemaVersion: 3` (`profile`, `suggestionLog`), migration automatique depuis la version 2.
 
 Vérification complète : `pnpm run check` (format, lint, tests).
+
+
+## V0.16 — planning IA vers Calendrier
+
+Une demande de planning reçoit du texte et un bloc structuré dans la même réponse IA : jusqu’à six créneaux sont extraits, sans second appel ni nouvelle clé. Chaque fiche affiche titre, date locale, heure, durée et alerte. Les champs manquants, dates impossibles/passées et valeurs non prises en charge bloquent le bouton ; Modifier ouvre le formulaire Calendrier existant. Les chevauchements MOMENTUM sont signalés ; l’application ne peut pas lire la disponibilité Apple.
+
+Chaque bouton Ajouter à Calendrier enregistre une action puis lance le Bridge existant pour cet unique événement. Aucune écriture au moment de la génération. Les créneaux envoyés restent marqués « non confirmé » ; une relance identique ne crée pas une seconde action. Après retour depuis Raccourcis ou rechargement, les propositions et leurs identifiants sont conservés dans momentum.v1 (schemaVersion 4). Les sauvegardes antérieures conservent tâches, profil, offres et historique. Fermer les propositions ne supprime pas les actions déjà créées. Aucun raccourci à réinstaller.
+
+La signature et le fichier MOMENTUM Bridge.shortcut ne sont pas modifiés. Les permissions ou dialogues Apple initiaux restent possibles. La PWA ne peut pas certifier la création dans Calendrier. Les réponses sans bloc exploitable expliquent l’absence de fiche ; aucun texte libre n’est converti silencieusement en événement.

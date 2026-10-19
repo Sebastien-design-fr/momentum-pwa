@@ -1017,3 +1017,19 @@ textarea {
   flex: 0 0 24px;
   accent-color: var(--accent);
 }
+
+#coach-plan {
+  margin-block: var(--section-gap, 22px);
+}
+.plan-slot {
+  overflow-wrap: anywhere;
+  margin-top: 0;
+  gap: 10px;
+}
+.plan-slot h3,
+.plan-slot p {
+  margin: 0;
+}
+.plan-slot .actions {
+  flex-wrap: wrap;
+}

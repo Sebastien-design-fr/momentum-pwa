@@ -135,10 +135,10 @@ test('profile and suggestion log are validated and default to empty', () => {
   assert.deepEqual(Object.keys(state.suggestionLog), ['ok']);
 });
 
-test('data saved by schema 2 loads into schema 3 without losing anything', () => {
+test('data saved by schema 2 loads into the current schema without losing anything', () => {
   const v2 = { schemaVersion: 2, name: 'Alex', tasks: [{ id: 'a', title: 'Garage' }], jobs: [] };
   const state = store.load({ getItem: () => JSON.stringify(v2) }).state;
-  assert.equal(state.schemaVersion, 3);
+  assert.equal(state.schemaVersion, store.SCHEMA_VERSION);
   assert.equal(state.name, 'Alex');
   assert.equal(state.tasks[0].id, 'a');
   assert.deepEqual(state.suggestionLog, {});

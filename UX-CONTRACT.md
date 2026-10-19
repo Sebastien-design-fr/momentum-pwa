@@ -71,3 +71,8 @@ Une demande pendant le délai local reste dans la saisie et n’entre pas dans l
 Le modèle reçoit un historique borné et uniquement les données pertinentes. Les courts ajustements conservent le sujet sur plusieurs tours. Les capacités réelles et les CV sans faits sont traités localement. Le planificateur et l’écriture Calendrier restent entièrement déterministes, avec la même validation explicite avant Raccourcis. Les données utilisateur et leur format sont conservés.
 
 Intégration V0.15 : navigation déléguée sans onclick, CSP limitée à text.pollinations.ai pour la nouvelle inférence, stockage schemaVersion 3, suggestions et édition V0.14 conservés.
+
+
+## Planning IA — V0.16
+
+Choix utilisateur du 19 octobre : conserver le Bridge et valider chaque créneau. Les propositions IA deviennent des fiches dans le Coach, selon le contrat schedule.js. Aucun lancement Apple sans bouton explicite. La recette de fiche est calendar-draft ; Modifier réutilise le formulaire existant. Les erreurs restent dans la fiche, l’attente désactive ses actions, les chevauchements sont textuels. Au retour, les créneaux envoyés sont désactivés et marqués non confirmés ; une reprise reste possible depuis Actions. Les propositions sont conservées via store.js schemaVersion 4, sous la clé existante.

@@ -19,8 +19,8 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <link rel="icon" href="./icons/icon-192.png" />
-    <title>Momentum — Ton élan quotidien · v0.15.0</title>
-    <link rel="stylesheet" href="./styles.css?v=0.15.0" />
+    <title>Momentum — Ton élan quotidien · v0.16.0</title>
+    <link rel="stylesheet" href="./styles.css?v=0.16.0" />
   </head>
   <body>
     <div class="app">
@@ -245,6 +245,17 @@
             </button>
           </div>
           <p class="muted small" id="coach-action-status" aria-live="polite"></p>
+          <section id="coach-plan" aria-labelledby="coach-plan-title" hidden>
+            <h2 id="coach-plan-title">Ton planning à valider</h2>
+            <p class="hint">
+              Une validation par créneau, sans ressaisie. Les horaires proposés restent à vérifier ;
+              MOMENTUM ne lit pas ton calendrier Apple.
+            </p>
+            <div id="coach-plan-list" class="stack"></div>
+            <button id="coach-plan-dismiss" class="btn ghost small" type="button">
+              Fermer ces propositions
+            </button>
+          </section>
           <div id="coach-draft" class="calendar-draft" hidden>
             <div class="draft-head">
               <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -392,7 +403,7 @@
       </section>
       <section id="settings" class="screen" hidden>
         <h1>Réglages</h1>
-        <p class="muted small">MOMENTUM v0.15.0</p>
+        <p class="muted small">MOMENTUM v0.16.0</p>
         <div class="card stack">
           <div class="field">
             <label for="profile-name">Comment t'appeler ?</label>
@@ -674,12 +685,13 @@
         <button type="button" class="btn destructive" id="dialog-accept">Supprimer</button>
       </div>
     </dialog>
-    <script src="./store.js?v=0.15.0" defer></script>
-    <script src="./suggestions.js?v=0.15.0" defer></script>
-    <script src="./planner.js?v=0.15.0" defer></script>
-    <script src="./coach.js?v=0.15.0" defer></script>
-    <script src="./bridge.js?v=0.15.0" defer></script>
-    <script src="./online-coach.js?v=0.15.0" defer></script>
-    <script src="./app.js?v=0.15.0" defer></script>
+    <script src="./store.js?v=0.16.0" defer></script>
+    <script src="./suggestions.js?v=0.16.0" defer></script>
+    <script src="./planner.js?v=0.16.0" defer></script>
+    <script src="./coach.js?v=0.16.0" defer></script>
+    <script src="./bridge.js?v=0.16.0" defer></script>
+    <script src="./online-coach.js?v=0.16.0" defer></script>
+    <script src="./schedule.js?v=0.16.0" defer></script>
+    <script src="./app.js?v=0.16.0" defer></script>
   </body>
 </html>
