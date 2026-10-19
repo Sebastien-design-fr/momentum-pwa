@@ -4,7 +4,7 @@ const test = require('node:test'),
   fs = require('node:fs'),
   path = require('node:path'),
   vm = require('node:vm');
-function app({ failStorage = false, initial } = {}) {
+function app({ failStorage = false, initial, fetchFn } = {}) {
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8'),
     nodes = new Map(),
     urls = [],
@@ -91,6 +91,9 @@ function app({ failStorage = false, initial } = {}) {
     },
   };
   const sandbox = {
+    fetch: fetchFn,
+    AbortController,
+    clearTimeout() {},
     document,
     Date: FixedDate,
     Intl,
@@ -124,6 +127,7 @@ function app({ failStorage = false, initial } = {}) {
     'bridge.js',
     'planner.js',
     'coach.js',
+    'online-coach.js',
     'app.js',
   ])
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), sandbox, {
@@ -256,4 +260,77 @@ test('Plus tard hides an idea without creating a task, and a task can be added w
   assert.equal(task.title, 'Ranger le garage');
   assert.equal(task.due, '');
   assert.equal(a.urls.length, 0);
+});
+
+test('a coaching intention does not open a calendar proposal or create a task', async () => {
+  const a = app();
+  await a.send('Je dois me remotiver');
+  assert.equal(a.nodes.get('draft-title').value, '');
+  assert.doesNotMatch(
+    a.nodes.get('coach-message').textContent,
+    /préparé une proposition de créneau/
+  );
+  assert.equal(a.stored().tasks.length, 0);
+  assert.equal(a.urls.length, 0);
+});
+test('a dated coaching question leaves a pending calendar proposal unchanged', async () => {
+  const a = app();
+  await a.send('Ajoute appeler le garage demain à 15h');
+  await a.send('Demain, comment améliorer ma motivation ?');
+  assert.equal(a.nodes.get('draft-title').value, 'appeler le garage');
+  assert.equal(a.nodes.get('draft-time').value, '15:00');
+  assert.doesNotMatch(a.nodes.get('coach-message').textContent, /préparé une proposition/);
+  assert.equal(a.stored().tasks.length, 0);
+  assert.equal(a.urls.length, 0);
+});
+test('personal writing asks for real facts instead of inventing a career or saving an event', async () => {
+  const a = app();
+  await a.send('Rédige mon CV complet');
+  assert.match(a.nodes.get('coach-message').textContent, /faits réels/);
+  assert.equal(a.stored().tasks.length, 0);
+  assert.equal(a.urls.length, 0);
+});
+
+test('online consent is explicit, cooldown preserves input, and calendar commands remain local', async () => {
+  let calls = 0;
+  const a = app({
+    fetchFn: async () => {
+      calls++;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: { content: 'Merci pour ton invitation. Je ne pourrai pas venir.' },
+            },
+          ],
+        }),
+      };
+    },
+  });
+  await a.nodes.get('coach-ai-enable').fire('click');
+  await a.send('Bonjour');
+  assert.equal(calls, 0);
+  a.nodes.get('coach-cloud-consent').checked = true;
+  await a.nodes.get('coach-ai-enable').fire('click');
+  assert.equal(calls, 0);
+  await a.send('Rédige un refus poli.');
+  assert.equal(calls, 1);
+  assert.match(a.nodes.get('coach-message').textContent, /Merci pour ton invitation/);
+  const before = a.stored().coachHistory.length;
+  await a.send('Plus chaleureux.');
+  assert.equal(calls, 1);
+  assert.equal(a.nodes.get('coach-input').value, 'Plus chaleureux.');
+  assert.equal(a.stored().coachHistory.length, before);
+  await a.send('Ajoute appeler le garage demain à 15h');
+  assert.equal(calls, 1);
+  assert.equal(a.nodes.get('coach-draft').hidden, false);
+  assert.equal(a.urls.length, 0);
+  a.nodes.get('coach-cloud-consent').checked = false;
+  await a.nodes.get('coach-cloud-consent').fire('change');
+  assert.match(a.nodes.get('coach-mode').textContent, /hors ligne/);
+  await a.send('Rédige un autre message');
+  assert.equal(calls, 1);
 });

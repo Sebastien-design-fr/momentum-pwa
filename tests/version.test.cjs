@@ -7,7 +7,7 @@ const read = (file) => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')
 const version = JSON.parse(read('package.json')).version;
 
 test('every versioned asset URL matches package.json', () => {
-  for (const file of ['index.html', 'app.js', 'sw.js']) {
+  for (const file of ['index.html', 'sw.js']) {
     const found = [...read(file).matchAll(/\?v=(\d+\.\d+\.\d+)/g)].map((m) => m[1]);
     assert.ok(found.length > 0, file + ' has versioned URLs');
     assert.deepEqual([...new Set(found)], [version], file);

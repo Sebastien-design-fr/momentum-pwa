@@ -77,7 +77,7 @@ function navigate(id) {
       coach: 'Coach',
       jobs: 'Emploi',
       settings: 'Réglages',
-    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.14.0';
+    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.15.0';
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
@@ -511,21 +511,16 @@ function renderCoach() {
 }
 let coachBusy = false,
   coachDraft = null;
-const localAI = MomentumCoach.createClient({
-  gpu: navigator.gpu,
-  loadRuntime: () => import('./ai-runtime.js?v=0.14.0'),
-  onProgress: (p) => {
-    $('coach-ai-status').textContent =
-      'Préparation de la conversation IA : ' +
-      Math.round(Math.max(0, Math.min(1, Number(p.progress) || 0)) * 100) +
-      ' %';
-  },
+const onlineAI = MomentumOnlineCoach.createClient({
+  fetchFn: (...args) => fetch(...args),
+  buildMessages: MomentumCoach.messages,
+  storage: typeof sessionStorage === 'undefined' ? undefined : sessionStorage,
 });
 function coachMode() {
-  const ready = localAI.ready;
+  const ready = onlineAI.ready;
   $('coach-mode').textContent = ready
-    ? 'Proposition IA à vérifier'
-    : 'Conseils adaptés à ta journée';
+    ? 'IA en ligne · Pollinations'
+    : 'Conseils guidés · hors ligne';
   $('coach-ai-enable').hidden = ready;
   $('coach-ai-disable').hidden = !ready;
   $('coach-ai-caution').hidden = !ready;
@@ -535,66 +530,80 @@ function setCoachBusy(value) {
   $('coach-input').disabled = value;
   $('coach-form').querySelector('button').disabled = value;
   document.querySelectorAll('[data-coach]').forEach((b) => (b.disabled = value));
-  $('coach-ai-stop').hidden = !value || !localAI.ready;
+  $('coach-ai-stop').hidden = !value || !onlineAI.ready;
   $('coach-ai-stop').disabled = false;
   $('coach-ai-stop').textContent = 'Arrêter la réponse';
   $('coach-ai-disable').disabled = value;
-}
-function aiProblem(err) {
-  const message = String(err?.message || err);
-  if (/WebGPU|processeur graphique/i.test(message))
-    return 'Ce navigateur ne donne pas accès au GPU nécessaire. Essaie depuis Safari à jour.';
-  if (/memory|allocation|out of|quota|storage/i.test(message))
-    return 'La mémoire ou le stockage disponible est insuffisant. Ferme les autres onglets et réessaie.';
-  if (/fetch|network|download|http|réseau/i.test(message))
-    return 'Le téléchargement a échoué. Vérifie ta connexion et réessaie.';
-  return 'Le modèle local ne fonctionne pas dans cette session. Tu peux réessayer ou utiliser les conseils guidés.';
 }
 async function coachSend(input) {
   const text = String(input || '')
     .trim()
     .slice(0, 500);
   if (!text || coachBusy) return;
+  const localAnswer = MomentumCoach.directReply(state, text),
+    localPlan =
+      MomentumPlanner.isRequest(text) ||
+      (coachDraft &&
+        (MomentumPlanner.isScheduleFollowup(text) ||
+          MomentumPlanner.parse(text, new Date(), coachDraft).negated ||
+          /^(?:annule|oublie)(?: cette| la)? proposition[.!]?$/i.test(text)));
+  if (onlineAI.ready && onlineAI.waitSeconds && !localAnswer && !localPlan) {
+    $('coach-ai-status').textContent =
+      'Le service gratuit accepte une demande toutes les 30 secondes. Réessaie dans ' +
+      onlineAI.waitSeconds +
+      ' s ; ton message reste dans la saisie.';
+    if (!$('coach-input').value) $('coach-input').value = text;
+    return;
+  }
   const requestState = state;
   setCoachBusy(true);
   requestState.coachHistory.push({ role: 'moi', text });
   save();
   renderCoach();
-  $('coach-message').textContent = localAI.ready
-    ? 'Je réfléchis à une prochaine étape…'
-    : 'Je regarde tes priorités…';
+  $('coach-message').textContent = onlineAI.ready
+    ? 'Je prépare ta réponse…'
+    : 'Je prépare une réponse guidée…';
   let reply;
+  coachMode();
   try {
-    const draft = MomentumPlanner.parse(text, new Date(), coachDraft);
-    if (coachDraft && draft.negated) {
+    const draft = MomentumPlanner.parse(text, new Date(), coachDraft),
+      exact = MomentumCoach.directReply(requestState, text);
+    if (exact) reply = exact;
+    else if (coachDraft && draft.negated) {
       clearCoachDraft();
       reply = 'Proposition annulée. Aucune tâche ni aucun événement n’a été créé.';
     } else if (coachDraft && /^(?:annule|oublie)(?: cette| la)? proposition[.!]?$/i.test(text)) {
       clearCoachDraft();
       reply = 'Proposition annulée. Aucune tâche ni aucun événement n’a été créé.';
-    } else if (MomentumPlanner.isRequest(text) || (coachDraft && draft.hasSchedule)) {
+    } else if (
+      MomentumPlanner.isRequest(text) ||
+      (coachDraft && MomentumPlanner.isScheduleFollowup(text))
+    ) {
       showCoachDraft(draft);
       reply =
         'J’ai préparé une proposition de créneau. ' +
         (draftProblem(draft) || 'Vérifie les détails, puis touche « Ajouter à Calendrier ».');
     } else
-      reply = localAI.ready
-        ? await localAI.generate(requestState, text, (t) => {
+      reply = onlineAI.ready
+        ? await onlineAI.generate(requestState, text, (t) => {
             if (state === requestState) $('coach-message').textContent = t;
           })
         : coachReply(text);
   } catch (err) {
     if (state !== requestState) return;
+    if (!$('coach-input').value) $('coach-input').value = text;
     if (err.message === 'Réponse interrompue.') {
       $('coach-ai-status').textContent = 'Réponse interrompue. Tu peux reformuler ton message.';
       $('coach-message').textContent = 'Prends ton temps. Je suis prêt pour ton prochain message.';
       return;
     }
+    $('coach-ai-status').textContent = err.message + ' Aucun service payant n’est utilisé.';
+    $('coach-mode').textContent = 'Conseils guidés de secours';
+    if (['writing', 'other'].includes(MomentumCoach.intent(text, requestState).topic)) {
+      $('coach-message').textContent = err.message;
+      return;
+    }
     reply = coachReply(text);
-    $('coach-ai-status').textContent =
-      'L’IA n’a pas pu répondre. ' + aiProblem(err) + ' Un conseil guidé est affiché.';
-    await localAI.unload().catch(() => {});
-    coachMode();
   } finally {
     setCoachBusy(false);
   }
@@ -614,36 +623,37 @@ $('coach-form').addEventListener('submit', (e) => {
   }
   fieldError('coach-input', 'coach-input-error', '');
   $('coach-input').value = '';
-  coachSend(text);
+  return coachSend(text);
 });
 onAction('coach-ai-enable', async () => {
-  const button = $('coach-ai-enable');
-  button.disabled = true;
-  button.textContent = 'Chargement de l’IA…';
+  if (!$('coach-cloud-consent').checked) {
+    $('coach-ai-status').textContent = 'Autorise l’envoi des messages pour activer l’IA en ligne.';
+    $('coach-cloud-consent').focus();
+    return;
+  }
+  await onlineAI.load({ consent: true });
   $('coach-ai-status').textContent =
-    'Préparation du modèle local. Tu peux continuer à utiliser l’application pendant le chargement.';
-  try {
-    await localAI.load();
+    'IA en ligne activée pour cette session. Gratuit, sans compte ; une demande toutes les 30 secondes par adresse IP.';
+  coachMode();
+});
+$('coach-cloud-consent').addEventListener('change', async () => {
+  if (!$('coach-cloud-consent').checked) {
+    await onlineAI.unload();
     $('coach-ai-status').textContent =
-      'Conversation IA prête. Tes messages restent sur cet appareil.';
+      'Autorisation retirée. Aucun nouveau message ne sera envoyé au service.';
     coachMode();
-  } catch (err) {
-    $('coach-ai-status').textContent = aiProblem(err) + ' Les conseils guidés restent disponibles.';
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Activer l’IA locale';
   }
 });
 onAction('coach-ai-stop', () => {
-  localAI.stop();
+  onlineAI.stop();
   $('coach-ai-stop').disabled = true;
   $('coach-ai-stop').textContent = 'Arrêt en cours…';
   $('coach-message').textContent = 'J’arrête cette réponse. Cela peut prendre quelques instants.';
 });
 onAction('coach-ai-disable', async () => {
-  await localAI.unload().catch(() => {});
+  await onlineAI.unload().catch(() => {});
   $('coach-ai-status').textContent =
-    'Retour aux conseils guidés. Le modèle est libéré de la mémoire.';
+    'Retour aux conseils guidés. Aucun nouveau message ne sera envoyé au service.';
   coachMode();
 });
 // One delegated listener replaces inline handlers so the page can run under a strict CSP.

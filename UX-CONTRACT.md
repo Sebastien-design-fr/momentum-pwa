@@ -58,3 +58,16 @@ Forms use novalidate and application errors. Required title, exact date/time, fu
 ## Verification
 
 Node tests: TZ=Europe/Paris node --test tests/*.test.cjs. Calendar-flow tests execute the actual application code with intercepted external URL dispatch, including one-confirmation, cancellation, duplicates and storage failure. They do not create real Calendar events. Browser checks cover narrow layout, draft editing, keyboard, native popup, cancel dialog, empty/error states and sibling screens. Physical iPhone GPU and keyboard behavior remain user-device checks.
+
+
+## Coach response contract — V0.15
+
+Deux modes : conseils guidés hors ligne, conversation distante Pollinations Classic. L’activation requiert une case native de consentement puis un bouton explicite, pour la session uniquement. Aucun appel au fournisseur avant cette activation. L’interface décrit les messages/contexte transmis et la limite d’une demande toutes les 30 secondes par IP. Aucun compte ni secret, aucune carte, aucun paiement automatique. Les réponses sont traitées hors de l’appareil selon les conditions du fournisseur.
+
+`input[type=checkbox]` est la recette native partagée pour les tâches et le consentement. `.task-check` est la variante compacte ; `.check-field` contient un libellé long, avec cible d’au moins 44 px. Palette et contrôles existants conservés.
+
+Une demande pendant le délai local reste dans la saisie et n’entre pas dans l’historique. HTTP 402/429 respecte Retry-After, sans paiement et sans essai automatique. Une panne affiche clairement le recours aux conseils guidés pour les sujets couverts. Une rédaction ou question libre non couverte reste en échec explicite ; pas de réponse inventée de secours. Arrêter interrompt la requête côté navigateur ; Revenir aux conseils guidés désactive les nouveaux envois. Le chargement du service n’affiche jamais une disponibilité garantie.
+
+Le modèle reçoit un historique borné et uniquement les données pertinentes. Les courts ajustements conservent le sujet sur plusieurs tours. Les capacités réelles et les CV sans faits sont traités localement. Le planificateur et l’écriture Calendrier restent entièrement déterministes, avec la même validation explicite avant Raccourcis. Les données utilisateur et leur format sont conservés.
+
+Intégration V0.15 : navigation déléguée sans onclick, CSP limitée à text.pollinations.ai pour la nouvelle inférence, stockage schemaVersion 3, suggestions et édition V0.14 conservés.

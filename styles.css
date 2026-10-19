@@ -1003,3 +1003,17 @@ textarea {
 #edit-form h2 {
   margin: 0;
 }
+
+.check-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  line-height: 1.5;
+}
+.check-field input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  accent-color: var(--accent);
+}

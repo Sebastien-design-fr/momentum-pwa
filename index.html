@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://geocoding-api.open-meteo.com https://api.open-meteo.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://geocoding-api.open-meteo.com https://api.open-meteo.com https://text.pollinations.ai; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
     />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f6f1" />
@@ -19,8 +19,8 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <link rel="icon" href="./icons/icon-192.png" />
-    <title>Momentum — Ton élan quotidien · v0.14.0</title>
-    <link rel="stylesheet" href="./styles.css?v=0.14.0" />
+    <title>Momentum — Ton élan quotidien · v0.15.0</title>
+    <link rel="stylesheet" href="./styles.css?v=0.15.0" />
   </head>
   <body>
     <div class="app">
@@ -83,7 +83,8 @@
         </div>
         <p class="small muted">
           Astuce : Momentum fonctionne même sans réseau après la première ouverture. Tes données
-          sont conservées dans ce navigateur. La conversation IA demande un téléchargement initial.
+          sont conservées dans ce navigateur. La conversation IA demande une connexion Internet et
+          ton autorisation.
         </p>
       </section>
       <section id="tasks" class="screen" hidden>
@@ -197,8 +198,26 @@
           <div class="bubble" id="coach-message" aria-live="polite">
             Qu’est-ce qui compte pour toi aujourd’hui ?
           </div>
+          <label class="check-field small">
+            <input id="coach-cloud-consent" type="checkbox" />
+            Autoriser, pour cette session, l’envoi de mon message, de quelques échanges récents et
+            des actions pertinentes à Pollinations.
+          </label>
+          <div class="coach-ai-tools">
+            <button class="btn secondary small" id="coach-ai-enable" type="button">
+              Activer l’IA gratuite en ligne
+            </button>
+            <button class="btn ghost small" id="coach-ai-disable" type="button" hidden>
+              Revenir aux conseils guidés
+            </button>
+            <p class="hint" id="coach-ai-status" aria-live="polite">
+              Sans compte, sans clé, sans paiement. Une demande toutes les 30 secondes par adresse
+              IP ; disponibilité non garantie. Les conseils guidés restent utilisables hors ligne.
+            </p>
+          </div>
           <p class="hint" id="coach-ai-caution" hidden>
-            Proposition à vérifier : ce modèle peut inventer des détails, notamment pour un CV.
+            Réponse à vérifier : l’IA peut inventer des détails, notamment pour un CV. Les messages
+            sont traités par un service externe.
           </p>
           <form novalidate id="coach-form" class="coach-entry">
             <input
@@ -288,29 +307,27 @@
           </details>
         </div>
         <details class="card coach-ai-settings">
-          <summary>
-            ✧ Conversation IA sur cet appareil
-            <span class="tag">Expérimental</span>
-          </summary>
-          <p class="small muted">
-            Pour échanger librement, tu peux charger un modèle IA local. Aucun compte ni abonnement.
-            Tes messages sont traités sur l’appareil.
-          </p>
-          <div class="coach-ai-tools">
-            <button class="btn secondary small" id="coach-ai-enable" type="button">
-              Activer l’IA locale
-            </button>
-            <button class="btn ghost small" id="coach-ai-disable" type="button" hidden>
-              Revenir aux conseils guidés
-            </button>
-            <p class="hint" id="coach-ai-status" aria-live="polite">
-              Premier téléchargement d’environ 900 Mo : préfère le Wi-Fi. La compatibilité et la
-              vitesse dépendent du navigateur. Le modèle devra être rechargé en mémoire à chaque
-              ouverture.
-            </p>
-          </div>
+          <summary>À propos de l’IA en ligne</summary>
           <p class="hint">
-            Un petit modèle peut se tromper. Tu vérifies et valides toujours chaque action.
+            Pollinations Classic fournit le modèle distant disponible pour son accès anonyme. Aucune
+            installation ni gros téléchargement. Les échanges récents sont limités et tes listes ne
+            sont transmises que si la question les concerne. Ce service peut conserver les données
+            selon sa politique de confidentialité ; MOMENTUM ne garantit pas leur confidentialité
+            auprès du fournisseur.
+          </p>
+          <p class="hint">
+            Si le service est limité ou indisponible, les conseils guidés prennent le relais lorsque
+            la demande est couverte. Aucun paiement, abonnement ou service payant de secours n’est
+            déclenché.
+          </p>
+          <p class="hint">
+            <a href="https://pollinations.ai/privacy" target="_blank" rel="noopener noreferrer">
+              Confidentialité du fournisseur
+            </a>
+            ·
+            <a href="https://pollinations.ai/terms" target="_blank" rel="noopener noreferrer">
+              Conditions d’utilisation
+            </a>
           </p>
         </details>
       </section>
@@ -375,7 +392,7 @@
       </section>
       <section id="settings" class="screen" hidden>
         <h1>Réglages</h1>
-        <p class="muted small">MOMENTUM v0.14.0</p>
+        <p class="muted small">MOMENTUM v0.15.0</p>
         <div class="card stack">
           <div class="field">
             <label for="profile-name">Comment t'appeler ?</label>
@@ -657,11 +674,12 @@
         <button type="button" class="btn destructive" id="dialog-accept">Supprimer</button>
       </div>
     </dialog>
-    <script src="./store.js?v=0.14.0" defer></script>
-    <script src="./suggestions.js?v=0.14.0" defer></script>
-    <script src="./planner.js?v=0.14.0" defer></script>
-    <script src="./coach.js?v=0.14.0" defer></script>
-    <script src="./bridge.js?v=0.14.0" defer></script>
-    <script src="./app.js?v=0.14.0" defer></script>
+    <script src="./store.js?v=0.15.0" defer></script>
+    <script src="./suggestions.js?v=0.15.0" defer></script>
+    <script src="./planner.js?v=0.15.0" defer></script>
+    <script src="./coach.js?v=0.15.0" defer></script>
+    <script src="./bridge.js?v=0.15.0" defer></script>
+    <script src="./online-coach.js?v=0.15.0" defer></script>
+    <script src="./app.js?v=0.15.0" defer></script>
   </body>
 </html>

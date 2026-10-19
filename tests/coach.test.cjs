@@ -1,6 +1,13 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { context, priorityTasks, messages, localReply, createClient } = require('../coach.js');
+const {
+  context,
+  priorityTasks,
+  messages,
+  localReply,
+  visibleAnswer,
+  createClient,
+} = require('../coach.js');
 const now = new Date(2026, 9, 14, 12);
 const fixture = () => ({
   name: 'Sébastien',
@@ -44,9 +51,9 @@ test('priorities omit completed tasks and prioritize overdue dates without chang
 test('guided coach respects low energy, time budget, employment and actual followups', () => {
   const s = fixture();
   assert.match(localReply(s, 'Je suis peu motivé', now), /5 minutes/);
-  assert.match(localReply(s, 'Je suis peu motivé', now), /Appeler le garage/);
+  assert.doesNotMatch(localReply(s, 'Je suis peu motivé', now), /Appeler le garage|Entreprise B/);
   assert.match(localReply(s, 'J’ai seulement 8 minutes', now), /8 minutes/);
-  assert.match(localReply(s, 'Comment avancer ?', now), /Entreprise B/);
+  assert.match(localReply(s, 'Comment avancer ?', now), /Appeler le garage/);
   s.jobs = [];
   assert.match(localReply(s, 'Ma priorité est l’emploi', now), /Adapter mon CV/);
   assert.doesNotMatch(localReply(s, 'Ma priorité est l’emploi', now), /Action terminée/);
@@ -66,9 +73,9 @@ test('model prompt contains bounded context, alternates roles, includes current 
     ['system', 'user', 'assistant', 'user']
   );
   assert.equal(m.filter((t) => t.content === 'Maintenant').length, 1);
-  assert.match(m[0].content, /Appeler le garage/);
+  assert.doesNotMatch(m[0].content, /Appeler le garage|Entreprise B|Piste guidée/);
   assert.doesNotMatch(m[0].content, /Action terminée/);
-  assert.match(m[0].content, /Ne prétends jamais/);
+  assert.match(m[0].content, /N’invente aucun fait personnel/);
   const sparse = messages(
     {
       coachHistory: [
@@ -151,6 +158,7 @@ test('single load, streamed response and explicit memory release', async () => {
   );
   assert.deepEqual(streamed, ['Une ', 'Une action.']);
   assert.equal(counts().requested.stream, true);
+  assert.equal(counts().requested.max_tokens, 384);
   await client.unload();
   assert.equal(client.ready, false);
   assert.equal(counts().unloaded, 1);
@@ -183,4 +191,41 @@ test('load failure does not leave the client stuck; empty responses are explicit
   await client.load();
   assert.equal(client.ready, true);
   await assert.rejects(client.generate(fixture(), 'Question'), /pas produit/);
+});
+
+test('thinking markers and partial opening tags never reach the conversation', () => {
+  for (const raw of [
+    '',
+    '<',
+    '<th',
+    '<think>',
+    '<think>texte interne',
+    '<think>texte interne</think>',
+  ])
+    assert.equal(visibleAnswer(raw), '');
+  assert.equal(visibleAnswer('<think>texte interne</think>\nUne réponse.'), 'Une réponse.');
+  assert.equal(visibleAnswer('Une réponse.'), 'Une réponse.');
+});
+
+test('client keeps the loading message until a visible answer exists', async () => {
+  const client = createClient({
+    gpu: { requestAdapter: async () => ({ features: new Set(['shader-f16']) }) },
+    loadRuntime: async () => ({
+      CreateMLCEngine: async () => ({
+        chat: {
+          completions: {
+            create: async () =>
+              (async function* () {
+                for (const content of ['<th', 'ink>interne', '</think>', 'Une réponse.'])
+                  yield { choices: [{ delta: { content } }] };
+              })(),
+          },
+        },
+      }),
+    }),
+  });
+  await client.load();
+  const chunks = [];
+  assert.equal(await client.generate({}, 'Question', (t) => chunks.push(t)), 'Une réponse.');
+  assert.deepEqual(chunks, ['Une réponse.']);
 });

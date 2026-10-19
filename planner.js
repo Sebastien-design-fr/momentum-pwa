@@ -17,6 +17,11 @@
       )
     )
       return false;
+    if (
+      /^(?:je dois|il faut que je)\b/.test(s) &&
+      !/(?:\b(?:calendrier|agenda)\b|\b(?:a|vers)\s*\d{1,2}\s*(?:h|:))/.test(s)
+    )
+      return false;
     return /^(?:(?:peux[- ]tu|tu peux|je voudrais|j'aimerais|est-ce que tu peux)\s+)?(?:ajoute|ajouter|programme|programmer|planifie|planifier|prevois|prevoir|rappelle[- ]moi|rappeler|note|mets|il faut que je|je dois)\b/.test(
       s
     );
@@ -180,6 +185,14 @@
     c.issues = issues;
     return c;
   }
+  function isScheduleFollowup(text, now = new Date()) {
+    const parsed = parse(text, now);
+    if (!parsed.hasSchedule) return false;
+    const rest = normalize(parsed.title)
+      .replace(/\b(?:plutot|finalement|non|oui|et|avec|merci|alors|ce sera|s'il te plait)\b/g, '')
+      .replace(/[\s,.!?;:]+/g, '');
+    return !rest;
+  }
   function validate(c, now = new Date()) {
     if (!String(c.title || '').trim()) throw Error('Indique le nom de l’action.');
     if (!c.day) throw Error('Quel jour veux-tu prévoir cette action ?');
@@ -211,7 +224,7 @@
     normalize(a.title || '').trim() === normalize(b.title || '').trim() &&
     a.due === (b.day || b.due) &&
     a.time === (b.clock || b.time);
-  const api = { isRequest, parse, validate, same };
+  const api = { isRequest, isScheduleFollowup, parse, validate, same };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MomentumPlanner = api;
 })(globalThis);
