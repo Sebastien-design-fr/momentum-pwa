@@ -3,8 +3,8 @@
 (function (root) {
   const KEY = 'momentum.v1';
   const CORRUPT_KEY = KEY + '.corrupt';
-  // 1: V0.1–V0.11 (no explicit version). 2: adds `schemaVersion`. 3: adds `profile` and `suggestionLog`.
-  const SCHEMA_VERSION = 3;
+  // 1: V0.1–V0.11 (no explicit version). 2: adds `schemaVersion`. 3: adds `profile` and `suggestionLog`. 4: pending Coach planning slots.
+  const SCHEMA_VERSION = 4;
   const CATEGORIES = ['Emploi', 'Maison', 'Bien-être', 'Projet'];
   const JOB_STATUSES = ['À étudier', 'Candidature préparée', 'Envoyée', 'Entretien', 'Refusée'];
   const TONES = ['balanced', 'gentle', 'firm'];
@@ -115,6 +115,17 @@
       coachHistory: (Array.isArray(x.coachHistory) ? x.coachHistory.slice(-60) : [])
         .filter((m) => m && ['moi', 'coach'].includes(m.role))
         .map((m) => ({ role: m.role, text: String(m.text || '').slice(0, 1200) })),
+      coachPlan: list(x.coachPlan, 6)
+        .filter((e) => e && typeof e === 'object' && !Array.isArray(e))
+        .map((e) => ({
+          title: String(e.title || '').slice(0, 120),
+          day: DAY.test(e.day || '') ? e.day : '',
+          clock: CLOCK.test(e.clock || '') ? e.clock : '',
+          duration: Number.isInteger(e.duration) ? e.duration : null,
+          alert: Number.isInteger(e.alert) ? e.alert : null,
+          category: CATEGORIES.includes(e.category) ? e.category : 'Projet',
+          taskId: typeof e.taskId === 'string' ? e.taskId.slice(0, 120) : '',
+        })),
       coachLastDate: typeof x.coachLastDate === 'string' ? x.coachLastDate.slice(0, 10) : '',
       profile: sanitizeProfile(x.profile),
       suggestionLog: sanitizeSuggestionLog(x.suggestionLog),

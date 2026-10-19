@@ -16,6 +16,7 @@ export default [
         MomentumPlanner: 'readonly',
         MomentumCoach: 'readonly',
         MomentumOnlineCoach: 'readonly',
+        MomentumSchedule: 'readonly',
         MomentumBridge: 'readonly',
         module: 'readonly',
       },

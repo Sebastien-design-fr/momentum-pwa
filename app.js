@@ -77,7 +77,7 @@ function navigate(id) {
       coach: 'Coach',
       jobs: 'Emploi',
       settings: 'Réglages',
-    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.15.0';
+    }[id] || 'MOMENTUM') + ' — MOMENTUM v0.16.0';
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
@@ -508,12 +508,15 @@ function renderCoach() {
     addText(line, 'div', m.text);
     log.append(line);
   });
+  renderCoachPlan();
 }
 let coachBusy = false,
   coachDraft = null;
 const onlineAI = MomentumOnlineCoach.createClient({
   fetchFn: (...args) => fetch(...args),
-  buildMessages: MomentumCoach.messages,
+  buildMessages: (state, input, date) =>
+    MomentumSchedule.messages(MomentumCoach.messages, state, input, date),
+  maxTokensFor: (state, input) => (MomentumSchedule.wantsPlan(input, state) ? 1500 : 700),
   storage: typeof sessionStorage === 'undefined' ? undefined : sessionStorage,
 });
 function coachMode() {
@@ -534,15 +537,17 @@ function setCoachBusy(value) {
   $('coach-ai-stop').disabled = false;
   $('coach-ai-stop').textContent = 'Arrêter la réponse';
   $('coach-ai-disable').disabled = value;
+  renderCoachPlan();
 }
 async function coachSend(input) {
   const text = String(input || '')
     .trim()
     .slice(0, 500);
   if (!text || coachBusy) return;
-  const localAnswer = MomentumCoach.directReply(state, text),
+  const planning = MomentumSchedule.wantsPlan(text, state);
+  const localAnswer = planning ? null : MomentumCoach.directReply(state, text),
     localPlan =
-      MomentumPlanner.isRequest(text) ||
+      (!planning && MomentumPlanner.isRequest(text)) ||
       (coachDraft &&
         (MomentumPlanner.isScheduleFollowup(text) ||
           MomentumPlanner.parse(text, new Date(), coachDraft).negated ||
@@ -568,7 +573,28 @@ async function coachSend(input) {
   try {
     const draft = MomentumPlanner.parse(text, new Date(), coachDraft),
       exact = MomentumCoach.directReply(requestState, text);
-    if (exact) reply = exact;
+    if (planning) {
+      if (!onlineAI.ready)
+        reply =
+          'Active l’IA en ligne pour préparer plusieurs créneaux, ou indique une action avec sa date et son heure.';
+      else {
+        const raw = await onlineAI.generate(requestState, text);
+        if (state !== requestState) return;
+        const plan = MomentumSchedule.extract(raw);
+        reply =
+          plan.text ||
+          'Voici les créneaux proposés. Vérifie-les avant de les envoyer à Calendrier.';
+        if (plan.events.length) {
+          requestState.coachPlan = plan.events;
+          clearCoachDraft();
+        } else requestState.coachPlan = [];
+        $('coach-action-status').textContent =
+          plan.issue ||
+          (plan.events.length
+            ? 'Créneaux extraits. Un appui sur Ajouter à Calendrier par créneau.'
+            : 'Aucun créneau extrait. Demande un planning avec des dates et des horaires précis.');
+      }
+    } else if (exact) reply = exact;
     else if (coachDraft && draft.negated) {
       clearCoachDraft();
       reply = 'Proposition annulée. Aucune tâche ni aucun événement n’a été créé.';
@@ -586,7 +612,8 @@ async function coachSend(input) {
     } else
       reply = onlineAI.ready
         ? await onlineAI.generate(requestState, text, (t) => {
-            if (state === requestState) $('coach-message').textContent = t;
+            if (state === requestState)
+              $('coach-message').textContent = MomentumSchedule.extract(t).text;
           })
         : coachReply(text);
   } catch (err) {
@@ -608,6 +635,7 @@ async function coachSend(input) {
     setCoachBusy(false);
   }
   if (state !== requestState) return;
+  reply = MomentumSchedule.extract(reply).text;
   requestState.coachHistory.push({ role: 'coach', text: reply });
   requestState.coachHistory = requestState.coachHistory.slice(-60);
   save();
@@ -686,11 +714,13 @@ function draftProblem(c) {
   }
 }
 function clearCoachDraft() {
+  coachPlanEditing = null;
   coachDraft = null;
   $('coach-draft').hidden = true;
   $('coach-create-task').hidden = false;
 }
 function showCoachDraft(c) {
+  coachPlanEditing = null;
   coachDraft = c;
   $('coach-draft').hidden = false;
   $('coach-create-task').hidden = true;
@@ -750,6 +780,152 @@ onAction('coach-create-task', () => {
   $('coach-action-status').textContent = 'Complète le créneau ci-dessous.';
   $('coach-draft').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 });
+// Each proposed slot keeps its own validation and uses the unchanged single-event Bridge.
+let coachPlanEditing = null;
+function planTask(entry) {
+  return state.tasks.find(
+    (t) => (entry.taskId && t.id === entry.taskId) || MomentumPlanner.same(t, entry)
+  );
+}
+function planProblem(entry) {
+  const issue = draftProblem(entry);
+  if (issue) return issue;
+  const existing = planTask(entry);
+  if (existing && (existing.duration !== entry.duration || existing.alert !== entry.alert))
+    return 'Une action existe à ce créneau avec une autre durée ou alerte. Retrouve-la dans Actions.';
+  return '';
+}
+function renderCoachPlan() {
+  const entries = state.coachPlan || [];
+  $('coach-plan').hidden = !entries.length;
+  const list = $('coach-plan-list');
+  list.replaceChildren();
+  entries.forEach((entry, index) => {
+    const row = document.createElement('article');
+    row.className = 'calendar-draft plan-slot';
+    addText(row, 'h3', entry.title || 'Action à préciser');
+    const date = entry.day ? new Date(entry.day + 'T12:00:00') : null;
+    const label =
+      date && !Number.isNaN(date.getTime())
+        ? date.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })
+        : 'Date à préciser';
+    addText(row, 'p', label + ' · ' + (entry.clock || 'Heure à préciser'), 'small');
+    addText(
+      row,
+      'p',
+      (entry.duration == null ? 'Durée à préciser' : entry.duration + ' min') +
+        ' · ' +
+        (entry.alert == null
+          ? 'Alerte à préciser'
+          : entry.alert === 0
+            ? 'Alerte au début'
+            : 'Alerte ' + entry.alert + ' min avant'),
+      'small muted'
+    );
+    const existing = planTask(entry),
+      sent = !!existing?.bridgeLaunched,
+      issue = planProblem(entry);
+    const status = addText(
+      row,
+      'p',
+      sent
+        ? 'Demande déjà envoyée à Raccourcis ; enregistrement Apple non confirmé.'
+        : issue || 'À vérifier avant envoi à Calendrier.',
+      issue ? 'hint error' : 'hint'
+    );
+    status.id = 'plan-status-' + index;
+    status.setAttribute('role', 'status');
+    if (!issue && !sent) {
+      const start = new Date(entry.day + 'T' + entry.clock + ':00').getTime(),
+        end = start + entry.duration * 60000;
+      const candidates = [
+        ...entries.filter((e) => e !== entry),
+        ...state.tasks
+          .filter((t) => t !== existing && !t.done)
+          .map((t) => ({ ...t, day: t.due, clock: t.time })),
+      ];
+      if (
+        candidates.some((e) => {
+          const s = new Date(e.day + 'T' + e.clock + ':00').getTime();
+          return Number.isFinite(s) && s < end && s + (e.duration || 60) * 60000 > start;
+        })
+      )
+        addText(
+          row,
+          'p',
+          'Chevauchement avec une autre proposition ou action MOMENTUM. Vérifie les horaires.',
+          'hint'
+        );
+    }
+    const controls = document.createElement('div');
+    controls.className = 'actions';
+    const confirm = addText(
+      controls,
+      'button',
+      sent ? 'Demande envoyée' : 'Ajouter à Calendrier',
+      'btn small'
+    );
+    confirm.type = 'button';
+    confirm.disabled = coachBusy || sent || !!issue;
+    confirm.setAttribute('aria-describedby', status.id);
+    confirm.setAttribute(
+      'aria-label',
+      'Ajouter à Calendrier : ' + (entry.title || 'action à préciser')
+    );
+    confirm.addEventListener('click', () => confirmCoachPlan(entry));
+    const edit = addText(controls, 'button', 'Modifier', 'btn ghost small');
+    edit.type = 'button';
+    edit.disabled = coachBusy || sent || !!existing;
+    edit.setAttribute(
+      'aria-label',
+      'Modifier le créneau : ' + (entry.title || 'action à préciser')
+    );
+    edit.addEventListener('click', () => {
+      showCoachDraft(entry);
+      coachPlanEditing = entry;
+    });
+    row.append(controls);
+    list.append(row);
+  });
+}
+function confirmCoachPlan(entry) {
+  if (coachBusy || !(state.coachPlan || []).includes(entry)) return;
+  try {
+    const issue = planProblem(entry);
+    if (issue) throw Error(issue);
+    const existing = planTask(entry);
+    if (existing?.bridgeLaunched) return;
+    const task = existing || savePlannedAction(entry);
+    entry.taskId = task.id;
+    if (!save())
+      throw Error(
+        'Action conservée. Envoi suspendu : le planning ne peut pas être enregistré. Réessaie depuis Actions.'
+      );
+    const sent = launchAppleBridge(task);
+    $('coach-action-status').textContent = sent
+      ? 'Demande envoyée pour « ' +
+        task.title +
+        ' ». Reviens dans MOMENTUM pour le créneau suivant.'
+      : 'Action conservée. Réessaie depuis Actions.';
+    renderCoachPlan();
+  } catch (err) {
+    $('coach-action-status').textContent = err.message;
+  }
+}
+onAction('coach-plan-dismiss', () => {
+  state.coachPlan = [];
+  coachPlanEditing = null;
+  save();
+  renderCoachPlan();
+  $('coach-action-status').textContent =
+    'Propositions fermées. Les actions déjà enregistrées restent dans Actions.';
+});
+
 function savePlannedAction(c) {
   const valid = MomentumPlanner.validate(c);
   if (state.tasks.some((t) => MomentumPlanner.same(t, valid)))
@@ -776,12 +952,19 @@ function savePlannedAction(c) {
 onAction('draft-confirm', () => {
   if (!coachDraft) return;
   try {
-    const item = savePlannedAction(readDraft());
+    const pending = coachPlanEditing;
+    const values = readDraft();
+    const item = savePlannedAction(values);
+    if (pending) {
+      Object.assign(pending, values, { taskId: item.id });
+      save();
+    }
     clearCoachDraft();
     $('coach-action-status').textContent =
       'Action enregistrée. Demande envoyée à Raccourcis Apple ; vérifie Calendrier.';
     feedback('Action enregistrée. Ouverture de Raccourcis Apple.');
     const launched = launchAppleBridge(item);
+    renderCoachPlan();
     if (!launched)
       $('coach-action-status').textContent =
         'Action enregistrée. Réessaie l’envoi à Calendrier depuis Actions.';
@@ -1028,6 +1211,8 @@ function launchAppleBridge(task) {
     feedback('Demande envoyée à Raccourcis Apple. Vérifie Calendrier.');
     return true;
   } catch {
+    task.bridgeLaunched = previous;
+    save();
     feedback('Action conservée. Raccourcis n’a pas pu être ouvert. Réessaie depuis Actions.');
     return false;
   }

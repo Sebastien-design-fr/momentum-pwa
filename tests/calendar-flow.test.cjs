@@ -86,7 +86,11 @@ function app({ failStorage = false, initial, fetchFn } = {}) {
   const location = {
     protocol: 'https:',
     assign: (url) => {
-      assert.equal(JSON.parse(data).tasks.length, 1, 'persist before Apple launch');
+      const payload = JSON.parse(new URL(url).searchParams.get('text'));
+      assert.ok(
+        JSON.parse(data).tasks.some((t) => t.id === payload.id),
+        'persist matching task before Apple launch'
+      );
       urls.push(url);
     },
   };
@@ -127,6 +131,7 @@ function app({ failStorage = false, initial, fetchFn } = {}) {
     'bridge.js',
     'planner.js',
     'coach.js',
+    'schedule.js',
     'online-coach.js',
     'app.js',
   ])
@@ -139,6 +144,7 @@ function app({ failStorage = false, initial, fetchFn } = {}) {
     alerts,
     stored: () => JSON.parse(data),
     memory: () => JSON.parse(vm.runInContext('JSON.stringify(state)', sandbox)),
+    evaluate: (code) => vm.runInContext(code, sandbox),
     send: async (text) => {
       nodes.get('coach-input').value = text;
       await nodes.get('coach-form').fire('submit');
@@ -333,4 +339,115 @@ test('online consent is explicit, cooldown preserves input, and calendar command
   assert.match(a.nodes.get('coach-mode').textContent, /hors ligne/);
   await a.send('Rédige un autre message');
   assert.equal(calls, 1);
+});
+
+test('AI planning yields cards without side effects, each click dispatches exactly one unchanged Bridge payload', async () => {
+  const events = [
+    {
+      title: 'Lire 🚗',
+      day: '2026-10-15',
+      clock: '15:00',
+      duration: 30,
+      alert: 0,
+      category: 'Projet',
+    },
+    {
+      title: 'Marche',
+      day: '2026-10-15',
+      clock: '16:00',
+      duration: 60,
+      alert: 15,
+      category: 'Bien-être',
+    },
+  ];
+  let calls = 0;
+  const a = app({
+    fetchFn: async (_url, options) => {
+      calls++;
+      const body = JSON.parse(options.body);
+      assert.equal(body.max_tokens, 1500);
+      assert.match(body.messages[0].content, /momentum-plan/);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: {
+                content:
+                  'Deux créneaux proposés.\n```momentum-plan\n' +
+                  JSON.stringify({ events }) +
+                  '\n```',
+              },
+            },
+          ],
+        }),
+      };
+    },
+  });
+  a.nodes.get('coach-cloud-consent').checked = true;
+  await a.nodes.get('coach-ai-enable').fire('click');
+  await a.send('Propose un planning pour demain');
+  assert.equal(calls, 1);
+  assert.equal(a.stored().tasks.length, 0);
+  assert.equal(a.urls.length, 0);
+  assert.equal(a.stored().coachPlan.length, 2);
+  assert.doesNotMatch(a.nodes.get('coach-message').textContent, /momentum-plan/);
+  const first = () => a.nodes.get('coach-plan-list').children[0].children.at(-1).children[0];
+  await first().fire('click');
+  assert.equal(a.urls.length, 1);
+  assert.equal(a.stored().tasks.length, 1);
+  assert.equal(a.stored().coachPlan[0].taskId, a.stored().tasks[0].id);
+  const payload = JSON.parse(new URL(a.urls[0]).searchParams.get('text'));
+  assert.equal(payload.title, 'Lire 🚗');
+  assert.equal(payload.alert, 0);
+  assert.equal(payload.duration, 30);
+  await first().fire('click');
+  assert.equal(a.urls.length, 1);
+  assert.equal(a.stored().tasks.length, 1);
+  await a.nodes.get('coach-plan-list').children[1].children.at(-1).children[0].fire('click');
+  assert.equal(a.urls.length, 2);
+  assert.equal(a.stored().tasks.length, 2);
+  assert.equal(calls, 1);
+  const resumed = app({ initial: a.stored() });
+  assert.equal(
+    resumed.nodes.get('coach-plan-list').children[0].children.at(-1).children[0].disabled,
+    true
+  );
+  assert.equal(resumed.urls.length, 0);
+});
+test('invalid AI slots can be edited once, storage failures never dispatch Calendar, dismissed slots leave saved tasks intact', async () => {
+  const entry = {
+    title: 'Lecture',
+    day: '2026-10-15',
+    clock: '15:00',
+    duration: 45,
+    alert: null,
+    category: 'Projet',
+  };
+  const a = app({ initial: { tasks: [], jobs: [], coachPlan: [entry] } });
+  const controls = a.nodes.get('coach-plan-list').children[0].children.at(-1).children;
+  assert.equal(controls[0].disabled, true);
+  await controls[0].fire('click');
+  assert.equal(a.urls.length, 0);
+  await controls[1].fire('click');
+  assert.equal(a.nodes.get('draft-title').value, 'Lecture');
+  a.nodes.get('draft-duration').value = '30';
+  a.nodes.get('draft-alert').value = '0';
+  await a.nodes.get('draft-alert').fire('input');
+  await a.nodes.get('draft-confirm').fire('click');
+  assert.equal(a.urls.length, 1);
+  assert.equal(a.stored().coachPlan[0].alert, 0);
+  assert.ok(a.stored().coachPlan[0].taskId);
+  await a.nodes.get('coach-plan-dismiss').fire('click');
+  assert.equal(a.stored().coachPlan.length, 0);
+  assert.equal(a.stored().tasks.length, 1);
+  const b = app({
+    failStorage: true,
+    initial: { tasks: [], jobs: [], coachPlan: [{ ...entry, duration: 30, alert: 0 }] },
+  });
+  await b.nodes.get('coach-plan-list').children[0].children.at(-1).children[0].fire('click');
+  assert.equal(b.urls.length, 0);
+  assert.equal(b.memory().tasks.length, 0);
 });

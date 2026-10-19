@@ -9,6 +9,7 @@
   function createClient({
     fetchFn = root.fetch?.bind(root),
     buildMessages,
+    maxTokensFor = () => 700,
     now = () => Date.now(),
     timeoutMs = 45000,
     timers = root,
@@ -71,7 +72,7 @@
             body: JSON.stringify({
               model: MODEL,
               messages: buildMessages(state, input, date),
-              max_tokens: 700,
+              max_tokens: Math.max(100, Math.min(1500, Number(maxTokensFor(state, input)) || 700)),
               temperature: 0.4,
               stream: false,
             }),

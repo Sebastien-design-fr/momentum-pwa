@@ -2,18 +2,18 @@
 version: alpha
 name: MOMENTUM
 colors:
-  primary: "#2767A8"
-  background: "#F3F7F8"
-  text: "#13222B"
-  muted: "#566B78"
-  calendar: "#A85032"
-  success: "#39796C"
-  danger: "#A13E28"
+  primary: "#0f5a4d"
+  background: "#f4f6f1"
+  text: "#12251f"
+  muted: "#51635c"
+  calendar: "#c98a12"
+  success: "#2f7a55"
+  danger: "#a3361f"
 typography:
   body:
     fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
   display:
-    fontFamily: "ui-rounded, SF Pro Rounded, -apple-system, BlinkMacSystemFont, sans-serif"
+    fontFamily: "ui-serif, New York, Iowan Old Style, Georgia, serif"
 rounded:
   control: "10px"
   field: "8px"
@@ -44,15 +44,15 @@ components:
 
 Carnet de route personnel sur iPhone : convertir une intention en un prochain pas puis en un créneau. Le registre est celui d’un outil quotidien, pas d’une page commerciale. L’utilisateur francophone dispose d’un iPhone 16 Pro Max et demande une nouvelle palette. La signature est la fiche de créneau à liseré cuivre, seule surface expressivement différente. Éviter les statistiques géantes, les dégradés de fond et la multiplication des cartes identiques.
 
-Propriétaire des tokens : CSS `:root` de `index.html` (modèle B). Ce fichier documente les valeurs acceptées. Mapping : primary → --blue / boutons, liens, focus ; background → --paper / page ; text → --ink ; muted → --sub ; calendar → --copper / fiche de rendez-vous ; success → --jade / progression et tâches terminées. Danger → bouton de suppression et erreurs. Radius et espacement sont les recettes des classes partagées du même fichier. Les styles des cinq écrans consomment ces propriétaires, sans bibliothèque de thème parallèle.
+Propriétaire des tokens : CSS `:root` de `styles.css` (modèle B). Ce fichier documente les valeurs acceptées. Mapping : primary → --brand / boutons, liens, focus ; background → --paper / page ; text → --ink ; muted → --sub ; calendar → --accent / fiche de rendez-vous ; success → --ok / progression et tâches terminées. Danger → bouton de suppression et erreurs. Radius et espacement sont les recettes des classes partagées de styles.css. Les styles des cinq écrans consomment ces propriétaires, sans bibliothèque de thème parallèle.
 
 ## Colors
 
-Papier gris bleuté, encre ardoise et bleu d’action. Le cuivre indique un créneau à confirmer, pas une erreur ; le vert indique une progression accomplie. Les échecs comprennent toujours du texte. Le thème clair est choisi explicitement pour cette version ; le contraste forcé reste sous contrôle du système. Les anciennes icônes d’installation sont conservées pour garder l’application reconnaissable.
+Papier clair, encre forêt et vert d’action. L’or indique un créneau à confirmer, pas une erreur ; le vert indique une progression accomplie. Les échecs comprennent toujours du texte. Le mode sombre suit le système ; le contraste forcé reste sous contrôle du système. Les anciennes icônes d’installation sont conservées pour garder l’application reconnaissable.
 
 ## Typography
 
-Corps système Apple à 16 px ; titres arrondis 22–30 px. Les textes sont français, courts et alignés à gauche. Aucune police téléchargée, donc pas de saut de police et fonctionnement hors ligne. Seule la marque conserve sa graphie en capitales.
+Corps système Apple à 16 px ; titres serif 22–30 px. Les textes sont français, courts et alignés à gauche. Aucune police téléchargée, donc pas de saut de police et fonctionnement hors ligne. Seule la marque conserve sa graphie en capitales.
 
 ## Layout
 
@@ -60,7 +60,7 @@ Largeur maximale 680 px, gouttière 22 px ou 16 px sur téléphone étroit. Les 
 
 ## Elevation & Depth
 
-Sections planes et séparateurs discrets. La priorité est une surface bleutée. La fiche de créneau est blanche avec un liseré cuivre. Seul le message global fixe et le dialogue s’élèvent au-dessus du document.
+Sections planes et séparateurs discrets. La priorité est une surface forêt. La fiche de créneau est de surface avec un liseré doré. Seul le message global fixe et le dialogue s’élèvent au-dessus du document.
 
 ## Shapes
 
@@ -89,3 +89,8 @@ L’identité et les cinq écrans sont conservés. Le consentement réutilise le
 ## V0.15 — intégration sur les fondations V0.14
 
 La palette forêt, l’accent doré, les titres serif, le mode sombre et les suggestions de V0.14 sont conservés. Les styles restent dans styles.css. Le consentement en ligne utilise la même typographie et les boutons existants ; case native de 24 px et libellé extensible, sans débordement horizontal. Le stockage schemaVersion 3 et l’édition des tâches/offres restent intacts.
+
+
+## V0.16 — créneaux extraits
+
+Le planning réutilise calendar-draft, actions et les boutons existants. Titres enveloppables, date complète et champs explicitement nommés ; une carte par créneau, six maximum. Le bouton primaire confirme ce seul créneau, Modifier ouvre le formulaire canonique. Statut envoyé désactivé et non confirmé par Apple. Les propositions ne sont pas ajoutées à la liste des actions avant validation. Aucune nouvelle couleur ni nouveau raccourci.
