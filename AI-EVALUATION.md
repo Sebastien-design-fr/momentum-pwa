@@ -81,3 +81,10 @@ Défauts observés : rues inventées dans un premier conseil de marche ; après 
 Le client refuse tout paiement, ne réessaie pas automatiquement, respecte un délai de 30 secondes et gère quota, indisponibilité, annulation et réponses tronquées. Le consentement reste limité à la session et peut être retiré. Les tests automatiques valident ces protections, pas le naturel ni la véracité des générations.
 
 Validation finale : 55 tests automatisés passent, audit UI strict sans anomalie. Un dixième essai réel dans l’interface navigateur a produit deux phrases de refus sans motif inventé ; le passage navigateur → API → affichage a donc été vérifié. Aucun essai physique sur iPhone n’a été effectué.
+
+
+## Intégration V0.15 — 19 octobre 2026
+
+Le dépôt main a évolué en parallèle vers V0.14.0 : code formaté, store schemaVersion 3, thème forêt/sombre, suggestions et édition. Ces fonctions sont conservées ; la conversation anonyme est intégrée sur cette base en V0.15.0. `pnpm run check` passe : format, lint et 75 tests. La CSP n’ajoute que text.pollinations.ai aux destinations réseau d’inférence. Un onzième essai fictif dans cette interface produit trois phrases cohérentes sur la reprise de la lecture ; le conseil de 15 minutes reste assez exigeant pour une demande très simple. Les réserves de qualité du CV restent valables. Aucun test physique iPhone.
+
+L’audit statique strict sur la fusion signale 37 boutons sans action : il ne reconnaît pas le gestionnaire délégué document.addEventListener introduit en V0.12. Les boutons du Coach sont branchés via onAction/actionsById ; activation, envoi et réponse ont été vérifiés dans le navigateur. Ce rapport statique ne doit donc pas être présenté comme vierge, ni ses alertes confondues avec des erreurs d’exécution.

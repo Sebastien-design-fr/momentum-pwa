@@ -84,3 +84,8 @@ Icônes SVG cohérentes, traits 1.8 px, labels texte toujours présents dans la 
 ## V0.12 — activation de l’IA en ligne
 
 L’identité et les cinq écrans sont conservés. Le consentement réutilise le contrôle checkbox natif, avec la recette partagée `input[type=checkbox]` et la variante de libellé long `.check-field` (44 px minimum). Les boutons, statuts aria-live et détails reprennent les propriétaires existants ; aucune nouvelle couleur ni modalité visuelle. Le mode guidé et le mode distant sont nommés explicitement.
+
+
+## V0.15 — intégration sur les fondations V0.14
+
+La palette forêt, l’accent doré, les titres serif, le mode sombre et les suggestions de V0.14 sont conservés. Les styles restent dans styles.css. Le consentement en ligne utilise la même typographie et les boutons existants ; case native de 24 px et libellé extensible, sans débordement horizontal. Le stockage schemaVersion 3 et l’édition des tâches/offres restent intacts.

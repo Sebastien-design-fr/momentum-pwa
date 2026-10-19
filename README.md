@@ -1,6 +1,6 @@
-# MOMENTUM V0.12 — IA en ligne sans inscription
+# MOMENTUM V0.15 — IA en ligne sans inscription
 
-PWA personnelle pour iPhone. Les cinq écrans, la palette, les données `momentum.v1` et le raccourci MOMENTUM Bridge sont conservés. Travail sur `dev/coach-relevance-v0112` ; publication à vérifier séparément.
+PWA personnelle pour iPhone. Les cinq écrans, la palette, les données `momentum.v1` et le raccourci MOMENTUM Bridge sont conservés. Intégration sur `dev/coach-relevance-v0112`, à partir de la V0.14.0.
 
 ## Deux modes clairement indiqués
 
@@ -39,3 +39,28 @@ La mise à jour renouvelle seulement les caches applicatifs MOMENTUM ; elle n’
 `TZ=Europe/Paris node --test tests/*.test.cjs`
 
 Les tests couvrent conservation des données, consentement, POST sans clé ni données en URL, attente sans double requête, refus de paiement, erreurs, interruption, timeout et maintien de la validation Calendrier. Les tests automatiques ne prouvent pas la qualité du modèle : des conversations réelles séparées sont nécessaires. Les essais navigateur sur Mac ne prouvent pas le comportement physique de la PWA installée sur iPhone.
+
+## Évolutions conservées
+
+## V0.12.0 : fondations
+
+- Code reformaté (Prettier) et lisible ; styles extraits dans `styles.css`, données dans `store.js`.
+- Version unique dans `package.json` : `node scripts/set-version.mjs X.Y.Z` met à jour pages, service worker et cache ; un test vérifie la cohérence.
+- Les données portent un `schemaVersion` (clé `momentum.v1` inchangée). Des données illisibles sont conservées dans `momentum.v1.corrupt` au lieu d'être écrasées. L'app demande au navigateur de ne pas évacuer le stockage local.
+- Planificateur : « le 5 janvier » dit en décembre vise l'année suivante ; « demain 15h » fonctionne sans « à ».
+- Plus de gestionnaires `onclick` en ligne : un écouteur délégué, et une politique de sécurité du contenu (CSP) stricte pour les scripts.
+- Intégration continue : le workflow est fourni dans `docs/github-ci.yml` ; le copier vers `.github/workflows/ci.yml` (nécessite un jeton GitHub avec le scope `workflow`).
+
+## V0.13.0 : nouvelle identité visuelle
+
+Palette vert profond et souligné d'un seul accent jaune d'or (la prochaine étape, la progression, la fiche Calendrier), titres en serif système (New York sur iPhone, sans téléchargement), mode sombre automatique. Les couleurs sont des variables dans `styles.css`.
+
+## V0.14.0 : le coach propose des tâches
+
+- **Idées du coach** sur l'accueil (« Je te propose ») : relance de candidature échue, tâche en retard à reprogrammer, offre à étudier, idée de recherche d'emploi, action de départ si la liste est vide. Trois idées au plus, calculées localement (`suggestions.js`), sans IA ni réseau. Ajouter, Modifier ou Plus tard : rien n'est créé sans ton accord, et rien n'est envoyé à Calendrier.
+- **Mon profil de recherche** (Réglages) : ville, salaire minimum, trajet maximum, contrat. Aucune donnée personnelle n'est plus écrite dans le code.
+- **Tâches sans date** : le formulaire d'Actions crée directement la tâche. Le bouton ✎ modifie une tâche ou une offre (date, durée, alerte, lien, statut, relance).
+- **Mise à jour** : l'app cherche une nouvelle version à chaque retour au premier plan et affiche « Mettre à jour ».
+- Format de données `schemaVersion: 3` (`profile`, `suggestionLog`), migration automatique depuis la version 2.
+
+Vérification complète : `pnpm run check` (format, lint, tests).
